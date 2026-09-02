@@ -24,7 +24,6 @@ export function CopyNoteButton({
   return (
     <Button
       className="cta-focus"
-      fullWidth
       size="lg"
       onPress={() => {
         void copyNote();

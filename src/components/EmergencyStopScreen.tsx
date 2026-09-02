@@ -11,21 +11,18 @@ type EmergencyStopScreenProps = {
 export function EmergencyStopScreen({ onDone }: EmergencyStopScreenProps) {
   return (
     <div className="flex flex-1 flex-col">
-      <Alert status="danger">
+      <h1 className="font-display text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
+        {EMERGENCY_STOP.title}
+      </h1>
+      <Alert className="mt-8 max-w-xl" status="danger">
         <Alert.Indicator />
         <Alert.Content>
-          <Alert.Title>{EMERGENCY_STOP.title}</Alert.Title>
           <Alert.Description>{EMERGENCY_STOP.body}</Alert.Description>
         </Alert.Content>
       </Alert>
-      <div className="mt-auto pt-6">
-        <Button
-          className="cta-focus"
-          fullWidth
-          size="lg"
-          variant="danger"
-          onPress={onDone}
-        >
+      <div className="screen-actions">
+        <span />
+        <Button className="cta-focus" size="lg" variant="danger" onPress={onDone}>
           {EMERGENCY_STOP.done}
         </Button>
       </div>

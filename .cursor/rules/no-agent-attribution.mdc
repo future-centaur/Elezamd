@@ -1,0 +1,10 @@
+---
+description: Never attribute git commits or PRs to the Cursor agent
+alwaysApply: true
+---
+
+# No agent git attribution
+
+Do not add `Co-authored-by: Cursor` (or any Cursor/agent co-author trailer) to commits, PRs, or commit messages.
+
+Author and committer must be the user's git identity only.

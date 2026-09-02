@@ -31,7 +31,6 @@ type StoredNote = SharedNoteData & {
 // closure-scoped Map would silently split into two stores that never see
 // each other's writes even within a single running process.
 declare global {
-  // eslint-disable-next-line no-var
   var __elezamdShareStore: Map<string, StoredNote> | undefined;
 }
 

@@ -110,25 +110,23 @@ export function QuestionScreen({
       <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted">
         {QUESTION_UI.progress(progress.current, progress.total)}
       </p>
-      <h1 className="mt-2 text-xl font-semibold tracking-tight text-foreground">
+      <h1 className="font-display mt-2 text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
         {question.title}
       </h1>
-      <p className="mt-2 text-sm leading-6 text-muted">{question.prompt}</p>
-      <label className="mt-5 flex flex-1 flex-col">
+      <p className="mt-4 max-w-xl text-base leading-7 text-muted">{question.prompt}</p>
+      <label className="mt-8 flex max-w-xl flex-col">
         <span className="sr-only">{QUESTION_UI.answerLabel}</span>
         <TextArea
           aria-label={QUESTION_UI.answerLabel}
-          className="min-h-36 flex-1"
+          className="min-h-32"
           disabled={tidying}
-          fullWidth
           value={value}
           onChange={(event) => onChange(event.target.value)}
         />
       </label>
       {showMic ? (
         <Button
-          className="mt-3"
-          fullWidth
+          className="mt-4 self-start"
           isDisabled={tidying}
           size="lg"
           variant="secondary"
@@ -147,19 +145,12 @@ export function QuestionScreen({
           {listening ? QUESTION_UI.listening : QUESTION_UI.holdToTalk}
         </Button>
       ) : null}
-      <div className="mt-4 flex gap-3">
-        <Button
-          fullWidth
-          isDisabled={tidying}
-          size="lg"
-          variant="secondary"
-          onPress={onBack}
-        >
+      <div className="screen-actions">
+        <Button isDisabled={tidying} size="lg" variant="ghost" onPress={onBack}>
           {QUESTION_UI.back}
         </Button>
         <Button
           className={canContinue ? "cta-focus" : undefined}
-          fullWidth
           isDisabled={!canContinue}
           size="lg"
           onPress={() => {

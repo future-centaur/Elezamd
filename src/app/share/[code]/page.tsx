@@ -17,40 +17,44 @@ export default async function SharedNotePage({
     <AppStage variant="flow">
       {shared ? (
         <div className="flex flex-1 flex-col">
-          <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted">
+          <p className="font-display text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
             {SHARE_VIEWER.eyebrow}
           </p>
-          <p className="mt-1 text-sm text-muted">{SHARE_VIEWER.intro}</p>
+          <p className="mt-2 max-w-xl text-base text-muted">
+            {SHARE_VIEWER.intro}
+          </p>
 
-          <section className="mt-5 space-y-4">
-            <NoteBlock label={NOTE.feelLabel} text={shared.answers.feel} />
-            <NoteBlock
-              label={NOTE.fearLabel}
-              text={shared.answers.fear}
-              quoted
-            />
-            {shared.didSearch ? (
-              <>
-                <NoteBlock
-                  label={NOTE.searchedLabel}
-                  text={shared.answers.searched}
-                />
-                <NoteBlock label={NOTE.itSaidLabel} text={shared.answers.itSaid} />
-              </>
-            ) : (
-              <div className="rounded-2xl border border-border bg-surface px-4 py-3">
-                <p className="text-sm leading-6 text-foreground">
-                  {NOTE.didNotSearch}
-                </p>
-              </div>
-            )}
-          </section>
+          <article className="note-sheet mt-8 max-w-xl px-5 py-6 sm:px-7 sm:py-8">
+            <div className="space-y-5">
+              <NoteBlock label={NOTE.feelLabel} text={shared.answers.feel} />
+              <NoteBlock
+                label={NOTE.fearLabel}
+                text={shared.answers.fear}
+                quoted
+              />
+              {shared.didSearch ? (
+                <>
+                  <NoteBlock
+                    label={NOTE.searchedLabel}
+                    text={shared.answers.searched}
+                  />
+                  <NoteBlock
+                    label={NOTE.itSaidLabel}
+                    text={shared.answers.itSaid}
+                  />
+                </>
+              ) : (
+                <p className="text-base leading-7">{NOTE.didNotSearch}</p>
+              )}
+            </div>
+          </article>
 
-          <p className="mt-5 text-xs leading-5 text-muted">
+          <p className="mt-5 max-w-xl text-xs leading-5 text-muted">
             {NOTE.clinicHint}
           </p>
 
-          <div className="mt-auto pt-6">
+          <div className="screen-actions">
+            <span />
             <CopyNoteButton
               answers={shared.answers}
               didSearch={shared.didSearch}
@@ -59,7 +63,7 @@ export default async function SharedNotePage({
         </div>
       ) : (
         <div className="flex flex-1 flex-col items-center justify-center text-center">
-          <h1 className="text-xl font-semibold tracking-tight text-foreground">
+          <h1 className="font-display text-3xl font-bold tracking-tight text-foreground">
             {SHARE_VIEWER.notFoundTitle}
           </h1>
           <p className="mt-2 text-sm text-muted">{SHARE_VIEWER.notFoundBody}</p>
@@ -83,13 +87,13 @@ function NoteBlock({
   }
 
   return (
-    <div className="rounded-2xl border border-border bg-surface px-4 py-3">
-      <h2 className="text-xs font-medium uppercase tracking-[0.12em] text-muted">
+    <section>
+      <h2 className="text-xs font-medium uppercase tracking-[0.14em] text-muted">
         {label}
       </h2>
-      <p className="mt-1 whitespace-pre-wrap text-sm leading-6 text-foreground">
+      <p className="mt-1 whitespace-pre-wrap text-base leading-7">
         {quoted ? `“${text}”` : text}
       </p>
-    </div>
+    </section>
   );
 }
