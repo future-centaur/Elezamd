@@ -1,4 +1,9 @@
+"use client";
+
 import { useState } from "react";
+import { Button } from "@heroui/react/button";
+import { Card } from "@heroui/react/card";
+import { Chip } from "@heroui/react/chip";
 import { NOTE } from "@/lib/copy";
 import { copyText } from "@/lib/clipboard";
 import { formatNote } from "@/lib/format-note";
@@ -20,56 +25,55 @@ export function NoteScreen({ answers, didSearch, onDone }: NoteScreenProps) {
 
   return (
     <div className="flex flex-1 flex-col">
-      <p className="text-xs font-medium uppercase tracking-[0.16em] text-stone-500">
+      <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted">
         {NOTE.forTheNurse}
       </p>
-      <h1 className="mt-1 text-2xl font-semibold tracking-tight text-stone-900">
+      <h1 className="mt-1 text-2xl font-semibold tracking-tight text-foreground">
         {NOTE.title}
       </h1>
-      <p className="mt-1 text-sm text-stone-600">{NOTE.intro}</p>
-      <p className="mt-3 inline-flex self-start rounded-full bg-stone-100 px-3 py-1 text-xs text-stone-700">
+      <p className="mt-1 text-sm text-muted">{NOTE.intro}</p>
+      <Chip className="mt-3 self-start" size="sm">
         {NOTE.badge}
-      </p>
-      <p className="mt-4 text-sm leading-6 text-stone-600">
+      </Chip>
+      <p className="mt-4 text-sm leading-6 text-muted">
         {NOTE.aiHelped} {NOTE.keepNothing}
       </p>
 
       <section className="mt-5 space-y-4">
         <NoteBlock label={NOTE.feelLabel} text={answers.feel} />
-        <NoteBlock
-          label={NOTE.fearLabel}
-          text={answers.fear}
-          quoted
-        />
+        <NoteBlock label={NOTE.fearLabel} quoted text={answers.fear} />
         {didSearch ? (
           <>
             <NoteBlock label={NOTE.searchedLabel} text={answers.searched} />
             <NoteBlock label={NOTE.itSaidLabel} text={answers.itSaid} />
           </>
         ) : (
-          <p className="rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm leading-6 text-stone-900">
-            {NOTE.didNotSearch}
-          </p>
+          <Card>
+            <Card.Content>
+              <p className="text-sm leading-6 text-foreground">
+                {NOTE.didNotSearch}
+              </p>
+            </Card.Content>
+          </Card>
         )}
       </section>
 
-      <p className="mt-5 text-xs leading-5 text-stone-500">{NOTE.clinicHint}</p>
+      <p className="mt-5 text-xs leading-5 text-muted">{NOTE.clinicHint}</p>
 
       <div className="mt-auto flex flex-col gap-3 pt-6">
-        <button
-          type="button"
-          onClick={copyNote}
-          className="flex h-12 w-full items-center justify-center rounded-full border border-stone-300 text-sm font-medium text-stone-800"
+        <Button
+          className="cta-focus"
+          fullWidth
+          size="lg"
+          onPress={() => {
+            void copyNote();
+          }}
         >
           {copied ? NOTE.copied : NOTE.copyNote}
-        </button>
-        <button
-          type="button"
-          onClick={onDone}
-          className="flex h-12 w-full items-center justify-center rounded-full bg-teal-800 text-sm font-medium text-white hover:bg-teal-900"
-        >
+        </Button>
+        <Button fullWidth size="lg" variant="tertiary" onPress={onDone}>
           {NOTE.imDone}
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -85,15 +89,19 @@ function NoteBlock({
   quoted?: boolean;
 }) {
   return (
-    <div className="rounded-2xl border border-stone-200 bg-white px-4 py-3">
-      <h2 className="text-xs font-medium uppercase tracking-[0.12em] text-stone-500">
-        {label}
-      </h2>
+    <Card>
+      <Card.Header>
+        <Card.Title className="text-xs font-medium uppercase tracking-[0.12em] text-muted">
+          {label}
+        </Card.Title>
+      </Card.Header>
       {text ? (
-        <p className="mt-1 whitespace-pre-wrap text-sm leading-6 text-stone-900">
-          {quoted ? `“${text}”` : text}
-        </p>
+        <Card.Content>
+          <p className="whitespace-pre-wrap text-sm leading-6 text-foreground">
+            {quoted ? `“${text}”` : text}
+          </p>
+        </Card.Content>
       ) : null}
-    </div>
+    </Card>
   );
 }

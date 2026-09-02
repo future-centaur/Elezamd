@@ -1,3 +1,6 @@
+"use client";
+
+import { Button } from "@heroui/react/button";
 import { DISCLOSURE } from "@/lib/copy";
 
 type DisclosureScreenProps = {
@@ -7,26 +10,29 @@ type DisclosureScreenProps = {
 export function DisclosureScreen({ onContinue }: DisclosureScreenProps) {
   return (
     <div className="flex flex-1 flex-col">
-      <h1 className="text-2xl font-semibold tracking-tight text-stone-900">
+      <h1 className="text-2xl font-semibold tracking-tight text-foreground">
         {DISCLOSURE.title}
       </h1>
-      <p className="mt-4 text-base font-medium text-stone-900">
+      <p className="mt-4 text-base font-medium text-foreground">
         {DISCLOSURE.aiInvolved}
       </p>
-      <div className="mt-4 space-y-3 text-sm leading-6 text-stone-700">
+      <div className="mt-4 space-y-3 text-sm leading-6 text-muted">
         <p>{DISCLOSURE.notDiagnosis}</p>
         <p>{DISCLOSURE.elezaMeans}</p>
         <p>{DISCLOSURE.stayOnPhone}</p>
         <p>{DISCLOSURE.keepNothing}</p>
         <p>{DISCLOSURE.clinicRecord}</p>
       </div>
-      <button
-        type="button"
-        onClick={onContinue}
-        className="mt-auto flex h-12 w-full items-center justify-center rounded-full bg-teal-800 text-sm font-medium text-white hover:bg-teal-900"
-      >
-        {DISCLOSURE.continue}
-      </button>
+      <div className="mt-auto pt-6">
+        <Button
+          className="cta-focus"
+          fullWidth
+          size="lg"
+          onPress={onContinue}
+        >
+          {DISCLOSURE.continue}
+        </Button>
+      </div>
     </div>
   );
 }

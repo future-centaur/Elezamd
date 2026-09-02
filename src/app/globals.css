@@ -1,14 +1,29 @@
 @import "tailwindcss";
+@import "@heroui/styles";
 
 :root {
-  --paper: #f7f3eb;
-  --background: #e7e5e4;
-  --foreground: #1c1917;
+  --stage: oklch(0.18 0.018 50);
+  --stage-foreground: oklch(0.94 0.012 90);
+  --paper: oklch(0.97 0.014 90);
+  --background: oklch(0.97 0.014 90);
+  --foreground: oklch(0.22 0.02 50);
+  --surface: oklch(0.995 0.006 90);
+  --surface-foreground: var(--foreground);
+  --accent: oklch(0.48 0.09 185);
+  --accent-foreground: var(--snow);
+  --danger: oklch(0.58 0.2 28);
+  --danger-foreground: var(--snow);
+  --muted: oklch(0.5 0.02 50);
+  --radius: 0.75rem;
+  --focus: var(--accent);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-stage: var(--stage);
+  --color-stage-foreground: var(--stage-foreground);
+  --color-paper: var(--paper);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -19,7 +34,7 @@ body {
 }
 
 body {
-  background: var(--background);
+  background: var(--stage);
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
@@ -34,4 +49,173 @@ body {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+.stage-atmosphere {
+  background:
+    radial-gradient(
+      1200px 620px at 18% -8%,
+      oklch(0.36 0.07 185 / 0.38),
+      transparent 58%
+    ),
+    radial-gradient(
+      900px 520px at 92% 112%,
+      oklch(0.34 0.08 50 / 0.32),
+      transparent 54%
+    ),
+    var(--stage);
+  background-size: 140% 140%;
+  animation: stage-drift 18s ease-in-out infinite alternate;
+}
+
+.stage-atmosphere--danger {
+  background:
+    radial-gradient(
+      1000px 560px at 20% -10%,
+      oklch(0.42 0.16 28 / 0.42),
+      transparent 58%
+    ),
+    radial-gradient(
+      800px 480px at 90% 110%,
+      oklch(0.3 0.08 40 / 0.28),
+      transparent 55%
+    ),
+    var(--stage);
+}
+
+@keyframes stage-drift {
+  from {
+    background-position:
+      0% 0%,
+      100% 100%,
+      0 0;
+  }
+  to {
+    background-position:
+      18% 12%,
+      82% 88%,
+      0 0;
+  }
+}
+
+.cta-focus:not([aria-disabled="true"]):not([data-disabled="true"]):not(:disabled) {
+  animation: cta-pulse 2.6s ease-in-out infinite;
+}
+
+@keyframes cta-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 oklch(0.48 0.09 185 / 0.38);
+  }
+  50% {
+    box-shadow: 0 0 0 10px oklch(0.48 0.09 185 / 0);
+  }
+}
+
+.warning-card {
+  transition:
+    border-color 200ms ease,
+    background-color 200ms ease,
+    transform 200ms ease;
+}
+
+.warning-card--selected {
+  transform: scale(1.01);
+}
+
+.tidying-label {
+  animation: tidy-fade 900ms ease-in-out infinite;
+}
+
+@keyframes tidy-fade {
+  50% {
+    opacity: 0.65;
+  }
+}
+
+:root {
+  --duration-exit: 150ms;
+  --duration-enter: 210ms;
+  --duration-move: 400ms;
+}
+
+::view-transition {
+  pointer-events: none;
+}
+
+::view-transition-group(eleza-wordmark) {
+  z-index: 100;
+  animation-duration: 400ms;
+}
+
+::view-transition-old(.nav-forward) {
+  --slide-offset: -60px;
+  animation:
+    var(--duration-exit) ease-in both fade reverse,
+    var(--duration-move) ease-in-out both slide;
+}
+
+::view-transition-new(.nav-forward) {
+  --slide-offset: 60px;
+  animation:
+    var(--duration-enter) ease-out var(--duration-exit) both fade,
+    var(--duration-move) ease-in-out both slide;
+}
+
+::view-transition-old(.nav-back) {
+  --slide-offset: 60px;
+  animation:
+    var(--duration-exit) ease-in both fade reverse,
+    var(--duration-move) ease-in-out both slide reverse;
+}
+
+::view-transition-new(.nav-back) {
+  --slide-offset: -60px;
+  animation:
+    var(--duration-enter) ease-out var(--duration-exit) both fade,
+    var(--duration-move) ease-in-out both slide;
+}
+
+@keyframes fade {
+  from {
+    filter: blur(3px);
+    opacity: 0;
+  }
+  to {
+    filter: blur(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide {
+  from {
+    translate: var(--slide-offset);
+  }
+  to {
+    translate: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage-atmosphere {
+    animation: none;
+  }
+
+  .cta-focus,
+  .tidying-label,
+  .warning-card {
+    animation: none;
+    transition: none;
+  }
+
+  .warning-card--selected {
+    transform: none;
+  }
+
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
 }

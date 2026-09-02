@@ -1,9 +1,10 @@
+"use client";
+
 import { useState } from "react";
+import { Button } from "@heroui/react/button";
+import { Checkbox } from "@heroui/react/checkbox";
 import { EMERGENCY_CHECK } from "@/lib/copy";
-import {
-  NONE_WARNING_ID,
-  WARNING_SIGNS,
-} from "@/lib/emergency";
+import { NONE_WARNING_ID, WARNING_SIGNS } from "@/lib/emergency";
 
 type EmergencyCheckScreenProps = {
   onBack: () => void;
@@ -34,55 +35,71 @@ export function EmergencyCheckScreen({
   return (
     <div className="flex flex-1 flex-col">
       <fieldset>
-        <legend className="text-xl font-semibold tracking-tight text-stone-900">
+        <legend className="text-xl font-semibold tracking-tight text-foreground">
           {EMERGENCY_CHECK.title}
         </legend>
-        <p className="mt-2 text-sm leading-6 text-stone-700">
+        <p className="mt-2 text-sm leading-6 text-muted">
           {EMERGENCY_CHECK.hint}
         </p>
         <ul className="mt-5 space-y-2">
-          {WARNING_SIGNS.map((sign) => (
-            <li key={sign.id}>
-              <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-stone-200 bg-white px-3 py-3 text-sm text-stone-800">
-                <input
-                  type="checkbox"
-                  className="mt-0.5"
-                  checked={selected.includes(sign.id)}
+          {WARNING_SIGNS.map((sign) => {
+            const isSelected = selected.includes(sign.id);
+            return (
+              <li key={sign.id}>
+                <Checkbox
+                  aria-label={sign.label}
+                  className={`warning-card w-full rounded-xl border px-3 py-3 ${
+                    isSelected
+                      ? "warning-card--selected border-accent bg-accent-soft"
+                      : "border-border bg-surface"
+                  }`}
+                  isSelected={isSelected}
                   onChange={() => toggle(sign.id)}
-                />
-                {sign.label}
-              </label>
-            </li>
-          ))}
+                >
+                  <Checkbox.Content>
+                    <Checkbox.Control>
+                      <Checkbox.Indicator />
+                    </Checkbox.Control>
+                    {sign.label}
+                  </Checkbox.Content>
+                </Checkbox>
+              </li>
+            );
+          })}
           <li>
-            <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-stone-200 bg-white px-3 py-3 text-sm text-stone-800">
-              <input
-                type="checkbox"
-                className="mt-0.5"
-                checked={selected.includes(NONE_WARNING_ID)}
-                onChange={() => toggle(NONE_WARNING_ID)}
-              />
-              {EMERGENCY_CHECK.none}
-            </label>
+            <Checkbox
+              aria-label={EMERGENCY_CHECK.none}
+              className={`warning-card w-full rounded-xl border px-3 py-3 ${
+                selected.includes(NONE_WARNING_ID)
+                  ? "warning-card--selected border-accent bg-accent-soft"
+                  : "border-border bg-surface"
+              }`}
+              isSelected={selected.includes(NONE_WARNING_ID)}
+              onChange={() => toggle(NONE_WARNING_ID)}
+            >
+              <Checkbox.Content>
+                <Checkbox.Control>
+                  <Checkbox.Indicator />
+                </Checkbox.Control>
+                {EMERGENCY_CHECK.none}
+              </Checkbox.Content>
+            </Checkbox>
           </li>
         </ul>
       </fieldset>
       <div className="mt-auto flex gap-3 pt-6">
-        <button
-          type="button"
-          onClick={onBack}
-          className="flex h-12 flex-1 items-center justify-center rounded-full border border-stone-300 text-sm font-medium text-stone-800"
-        >
+        <Button fullWidth size="lg" variant="secondary" onPress={onBack}>
           {EMERGENCY_CHECK.back}
-        </button>
-        <button
-          type="button"
-          disabled={!canContinue}
-          onClick={() => onContinue(selected)}
-          className="flex h-12 flex-1 items-center justify-center rounded-full bg-teal-800 text-sm font-medium text-white enabled:hover:bg-teal-900 disabled:cursor-not-allowed disabled:bg-stone-300"
+        </Button>
+        <Button
+          className={canContinue ? "cta-focus" : undefined}
+          fullWidth
+          isDisabled={!canContinue}
+          size="lg"
+          onPress={() => onContinue(selected)}
         >
           {EMERGENCY_CHECK.continue}
-        </button>
+        </Button>
       </div>
     </div>
   );

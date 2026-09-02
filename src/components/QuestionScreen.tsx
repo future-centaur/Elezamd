@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Button } from "@heroui/react/button";
+import { TextArea } from "@heroui/react/textarea";
 import { QUESTION_UI, QUESTIONS } from "@/lib/copy";
 import { FEATURES } from "@/lib/features";
 import { questionProgress, type QuestionId } from "@/lib/session";
@@ -105,59 +107,69 @@ export function QuestionScreen({
 
   return (
     <div className="flex flex-1 flex-col">
-      <p className="text-xs font-medium uppercase tracking-[0.16em] text-stone-500">
+      <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted">
         {QUESTION_UI.progress(progress.current, progress.total)}
       </p>
-      <h1 className="mt-2 text-xl font-semibold tracking-tight text-stone-900">
+      <h1 className="mt-2 text-xl font-semibold tracking-tight text-foreground">
         {question.title}
       </h1>
-      <p className="mt-2 text-sm leading-6 text-stone-700">{question.prompt}</p>
+      <p className="mt-2 text-sm leading-6 text-muted">{question.prompt}</p>
       <label className="mt-5 flex flex-1 flex-col">
         <span className="sr-only">{QUESTION_UI.answerLabel}</span>
-        <textarea
+        <TextArea
+          aria-label={QUESTION_UI.answerLabel}
+          className="min-h-36 flex-1"
+          disabled={tidying}
+          fullWidth
           value={value}
           onChange={(event) => onChange(event.target.value)}
-          disabled={tidying}
-          className="min-h-36 flex-1 resize-none rounded-2xl border border-stone-200 bg-white px-3 py-3 text-sm leading-6 text-stone-900 outline-none focus:border-teal-700 disabled:bg-stone-50"
         />
       </label>
       {showMic ? (
-        <button
-          type="button"
-          disabled={tidying}
+        <Button
+          className="mt-3"
+          fullWidth
+          isDisabled={tidying}
+          size="lg"
+          variant="secondary"
+          onPointerCancel={stopListening}
           onPointerDown={(event) => {
             event.preventDefault();
             startListening();
           }}
-          onPointerUp={stopListening}
-          onPointerCancel={stopListening}
           onPointerLeave={() => {
             if (listening) {
               stopListening();
             }
           }}
-          className="mt-3 flex h-12 w-full items-center justify-center rounded-full border border-stone-300 text-sm font-medium text-stone-800 disabled:opacity-50"
+          onPointerUp={stopListening}
         >
           {listening ? QUESTION_UI.listening : QUESTION_UI.holdToTalk}
-        </button>
+        </Button>
       ) : null}
       <div className="mt-4 flex gap-3">
-        <button
-          type="button"
-          onClick={onBack}
-          disabled={tidying}
-          className="flex h-12 flex-1 items-center justify-center rounded-full border border-stone-300 text-sm font-medium text-stone-800 disabled:opacity-50"
+        <Button
+          fullWidth
+          isDisabled={tidying}
+          size="lg"
+          variant="secondary"
+          onPress={onBack}
         >
           {QUESTION_UI.back}
-        </button>
-        <button
-          type="button"
-          disabled={!canContinue}
-          onClick={onContinue}
-          className="flex h-12 flex-1 items-center justify-center rounded-full bg-teal-800 text-sm font-medium text-white enabled:hover:bg-teal-900 disabled:cursor-not-allowed disabled:bg-stone-300"
+        </Button>
+        <Button
+          className={canContinue ? "cta-focus" : undefined}
+          fullWidth
+          isDisabled={!canContinue}
+          size="lg"
+          onPress={() => {
+            void onContinue();
+          }}
         >
-          {tidying ? QUESTION_UI.tidying : QUESTION_UI.continue}
-        </button>
+          <span className={tidying ? "tidying-label" : undefined}>
+            {tidying ? QUESTION_UI.tidying : QUESTION_UI.continue}
+          </span>
+        </Button>
       </div>
     </div>
   );
