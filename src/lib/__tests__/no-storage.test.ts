@@ -59,15 +59,15 @@ describe("privacy and product boundaries", () => {
     }
   });
 
-  it("does not create assessment or share API routes", () => {
-    // NOTE: the `feature/share-link` branch intentionally adds a
-    // practitioner share link (see SPEC.md §3 "Non-Goals" and §4 P-01/P-03/
-    // H-03 for why this is normally forbidden on `main`). This allowlist is
-    // the single, explicit, scoped exception — it must not grow silently.
+  it("does not create assessment APIs or extra share routes", () => {
     const ALLOWED_SHARE_PATHS = [
       "/api/waiting-room/share/route.ts",
       "/share/[code]/page.tsx",
       "/share/[code]/CopyNoteButton.tsx",
+    ];
+    const ALLOWED_API_PATHS = [
+      "/api/waiting-room/tidy/route.ts",
+      "/api/waiting-room/share/route.ts",
     ];
 
     for (const { file } of contents) {
@@ -78,14 +78,16 @@ describe("privacy and product boundaries", () => {
 
       expect(normalized).not.toMatch(/\/api\/ai\//);
 
-      if (isAllowedShareRoute) {
-        continue;
+      if (!isAllowedShareRoute) {
+        expect(normalized).not.toMatch(/\/api\/share/);
+        expect(normalized).not.toMatch(/\/share\//);
       }
 
-      expect(normalized).not.toMatch(/\/api\/share/);
-      expect(normalized).not.toMatch(/\/share\//);
       if (normalized.includes("/api/")) {
-        expect(normalized).toMatch(/\/api\/waiting-room\/tidy\/route\.ts$/);
+        expect(
+          ALLOWED_API_PATHS.some((allowed) => normalized.endsWith(allowed)),
+          normalized,
+        ).toBe(true);
       }
     }
   });

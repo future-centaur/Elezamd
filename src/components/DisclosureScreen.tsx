@@ -21,6 +21,7 @@ export function DisclosureScreen({ onContinue }: DisclosureScreenProps) {
         <p>{DISCLOSURE.elezaMeans}</p>
         <p>{DISCLOSURE.stayOnPhone}</p>
         <p>{DISCLOSURE.keepNothing}</p>
+        <p>{DISCLOSURE.shareHint}</p>
         <p>{DISCLOSURE.clinicRecord}</p>
       </div>
       <div className="screen-actions">

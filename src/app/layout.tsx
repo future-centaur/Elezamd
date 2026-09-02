@@ -24,7 +24,7 @@ const mono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: "ElezaMD",
   description:
-    "Eleza. Don’t diagnose. A waiting-room note the patient shows the nurse. ElezaMD keeps nothing.",
+    "Eleza. Don’t diagnose. A waiting-room note the patient shows the nurse. No patient file.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

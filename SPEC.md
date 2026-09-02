@@ -9,10 +9,10 @@
 **Suggested repo name:** `elezamd`.  
 **Track:** Health — *The patient who searched his symptoms at 2am arrives handing the nurse a verdict instead of a symptom. The clinician starts from the wrong place. The build helps the patient describe, so the clinician can decide.*  
 **Target stack:** Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4 — **new app via `create-next-app`, not a fork.**  
-**Persistence:** None. When the session ends, nothing about that person stays on our side.  
+**Persistence:** No accounts and no durable patient file. Waiting-room session is in-memory on the phone. An optional share link may hold a copy in an in-memory TTL store until it expires.  
 **Document purpose:** Source-of-truth implementation contract for this hackathon track. It **replaces** `AFYANOW_AI_VOICE_EPHEMERAL_SHARE_AGENT_SPEC.md` for Health judging.
 
-This spec is what you build. The previous voice-consultation / differential / smart-referral / encrypted-doctor-link spec is **out of scope**. The existing AfyaNow telehealth demo is a **different product** in a **different repo**; do not copy its intake, recommendation, matching, or clinician dashboard into this project.
+This spec is what you build. The previous voice-consultation / differential / smart-referral spec is **out of scope**. Do not port that product’s encrypted Redis share. This repo’s share link is a short-lived in-memory copy only. The existing AfyaNow telehealth demo is a **different product** in a **different repo**; do not copy its intake, recommendation, matching, or clinician dashboard into this project.
 
 **Patient-facing name:** ElezaMD. Subtitle allowed: “before the doctor” / “eleza — explain.” Do not present this demo as a clinician marketplace.
 
@@ -22,14 +22,14 @@ This spec is what you build. The previous voice-consultation / differential / sm
 
 ElezaMD is a **waiting-room note**, not a telehealth matcher and not a diagnostic assistant.
 
-The patient messages in (or opens a phone page) in the waiting room. They describe what they feel first. Only if they looked this up online do we collect the internet verdict. One page stays **on their phone** to show the nurse. ElezaMD does not diagnose, does not pick a clinician, and does not keep the answers.
+The patient messages in (or opens a phone page) in the waiting room. They describe what they feel first. Only if they looked this up online do we collect the internet verdict. One page stays **on their phone** to show the nurse. The patient may also create a **short-lived share link** for a practitioner who is not looking at that screen. ElezaMD does not diagnose, does not pick a clinician, and does not keep a patient file.
 
 ```text
 Waiting room
       ↓
 Open / message-style entry
       ↓
-“AI is involved. We do not diagnose. We keep nothing.”
+“AI is involved. We do not diagnose. No patient file.”
       ↓
 Warning-sign check
       ↓
@@ -44,7 +44,10 @@ One-page note on this phone
       ↓
 Show the nurse
       ↓
-Close the tab → ElezaMD has nothing
+Optional: share a short-lived link
+      ↓
+Close the tab → session gone
+A share link, if created, expires on its own
 ```
 
 If the nurse copies the note into the clinic file, that copy is **the clinic’s record under the clinic’s rules**, not ElezaMD’s.
@@ -52,7 +55,7 @@ If the nurse copies the note into the clinic file, that copy is **the clinic’s
 **Judges will ask two things. The product must answer both:**
 
 1. Did the clinician get a better starting point than a homemade Google verdict?
-2. Did the build keep nothing?
+2. Did the build keep no durable patient file? (Session dies on close. A share link is opt-in, opaque, and time-limited.)
 
 ---
 
@@ -102,17 +105,21 @@ The note presents those facts, body first. The nurse starts from symptoms and co
 ElezaMD must never say, imply, or list what the patient “may have.”  
 Question 3 may record **the patient’s** feared label (the internet verdict). The app displays it as their words. It does not confirm, deny, rank, or add conditions.
 
-## G3 — Store nothing
+## G3 — No durable patient file
 
-No account, no history, no database, no relay, no URL dump of answers. Session state is in-memory only. Close or reload ends it.
+No account, no history, no database, no Redis. Session state is in-memory on the phone. Close or reload ends that session.
 
-## G4 — The note lives on the patient’s phone
+The patient may opt in to a **short-lived share link**. That copy lives in an in-memory server store with a TTL (default 24 hours), keyed by an opaque code. It is not a patient file, not an account, and not durable across process restart. When the TTL elapses (or the process restarts), ElezaMD has nothing about that person from the link.
 
-The artifact is the on-screen page (copy allowed). There is no doctor portal, no share ID, no ciphertext store. Showing the phone **is** the handoff.
+## G4 — The note lives on the patient’s phone (share is extra)
+
+The primary artifact is the on-screen page (copy allowed). Showing the phone **is** the default handoff.
+
+If the practitioner is not looking at the same screen, the patient may generate a short-lived `/share/[code]` link. There is no clinician portal, no login, and no ciphertext archive. The viewer is that one note until the link expires.
 
 ## G5 — Disclose AI at session open
 
-Every session’s first screen states that AI is involved, that ElezaMD does not diagnose, and that ElezaMD keeps nothing.
+Every session’s first screen states that AI is involved, that ElezaMD does not diagnose, and that ElezaMD does not keep a patient file. It must also say that closing the page ends the session, and that a share link (if created) lasts until it expires.
 
 ## G6 — The professional in the room
 
@@ -130,9 +137,9 @@ Do **not** build in this repo:
 - Smart referral / nearest facility / “Find care near me”
 - Clinician matching, browsing, booking, or a clinician dashboard
 - Adaptive clinical interview (an LLM asking until “ready for assessment”)
-- Encrypted share links, Redis/TTL relay, doctor viewer
+- Encrypted Redis share, durable share tables, or a clinician inbox that keeps notes
 - Accounts, profiles, longitudinal history
-- Permanent or ephemeral **server** storage of answers
+- Permanent **server** storage of answers (a short-lived in-memory share store is allowed; see G3 / §10.1)
 - Prescriptions, triage scores presented as clinical decisions
 - Natural-language extraction into a medical specialty
 - Passing symptoms in query strings or path segments
@@ -158,33 +165,33 @@ Non-negotiable. A build that violates any of these fails the track.
 
 ## 4.2 Privacy (Kazi)
 
-**P-01** No patient answers in a database, Redis, file, or other store this app controls.
+**P-01** No patient answers in a database, Redis, file, or other durable store this app controls. The only allowed server store is the in-memory TTL map used for share links (§10.1).
 
 **P-02** No `localStorage`, `sessionStorage`, or IndexedDB for note content.
 
-**P-03** No medical payload in URL query or path.
+**P-03** No medical payload in URL query or path. Opaque share codes in `/share/[code]` are lookup keys, not answers.
 
 **P-04** No accounts, cookies that identify the patient, or history of prior sessions.
 
-**P-05** Server routes, if any, must not persist request bodies. Prefer **no server round-trip** for the four answers.
+**P-05** Server routes must not persist request bodies to disk or a database. Prefer **no server round-trip** for the four answers until the patient creates a share link. Then `POST /api/waiting-room/share` may hold them in the in-memory TTL store.
 
-**P-06** Closing or reloading the tab must leave ElezaMD with nothing about that person.
+**P-06** Closing or reloading the tab must leave ElezaMD with nothing about that person **in the waiting-room session**. A share link the patient already created remains retrievable until it expires or the process restarts.
 
 **P-07** Logs must not contain searched terms, fears, symptoms, or note text.
 
 ## 4.3 Handoff (Kazi)
 
-**H-01** The note is shown on the patient’s device. This app does not open a clinician-side copy.
+**H-01** The note is shown on the patient’s device. A practitioner may also open a short-lived share link the patient created. Do not build a logged-in clinician workspace or inbox.
 
 **H-02** Copy-to-clipboard is for the **patient** to paste or for the **nurse** to put in the clinic file. That paste is not ElezaMD’s record.
 
-**H-03** Do not build “share with doctor” as a link the doctor fetches from our servers.
+**H-03** “Share with practitioner” is allowed as a short-lived link (`/share/[code]`) the practitioner fetches from this app. Codes are opaque. Default TTL is 24 hours. Do not put answers in the URL. Do not use Redis or a database for this store.
 
 ## 4.4 Session open (Kazi)
 
 **A-01** The first screen of every session states that AI is involved.
 
-**A-02** The same screen states that this is not a diagnosis and that answers are not kept.
+**A-02** The same screen states that this is not a diagnosis, that there is no patient file, that closing the page ends the session, and that a share link (if created) lasts until it expires.
 
 ## 4.5 Recipient (Kazi)
 
@@ -202,6 +209,7 @@ Non-negotiable. A build that violates any of these fails the track.
 | **Waiting-room session** | In-memory interaction. Not a durable entity. |
 | **The questions** | Feel first, then a yes/no search gate. Search / it said only if they looked it up. Fear always. Do not add extra intake steps. |
 | **Phone note** | Single page for the nurse. Body and fear first; search blocks only if they searched. |
+| **Share link** | Opt-in, short-lived URL (`/share/[code]`). Practitioner opens the same note. In-memory TTL store. |
 | **Internet verdict** | What search/AI/Dr Google told the patient (Q2/Q3). Treated as **their** story, not ours. |
 | **Emergency stop** | Hard stop: in-person/emergency care now. No note-as-diagnosis. |
 
@@ -219,7 +227,8 @@ Do not use: Care Event, AI Assessment, Referral Recommendation, Ephemeral Care S
 2. First screen (cannot skip):
    - AI is involved in this session.
    - We do not diagnose. We do not tell you what you have.
-   - Your answers stay on this phone. When you leave, we keep nothing.
+   - Your answers stay on this phone. Closing this page ends the session.
+   - If you create a share link, that copy lasts until it expires.
    - If the nurse copies this into the clinic file, that is the clinic’s record.
 3. Optional: short emergency warning-sign check
    (chest pain, severe breathing difficulty, severe bleeding, loss of consciousness).
@@ -229,8 +238,8 @@ Do not use: Care Event, AI Assessment, Referral Recommendation, Ephemeral Care S
    No → fear.
 5. Phone note (one page). Body first. Search blocks only if they searched.
 6. Patient shows the phone to the nurse.
-7. Optional: Copy note.
-8. Patient closes the tab or taps “I’m done” → state cleared.
+7. Optional: Copy note, or Share with practitioner (short-lived link).
+8. Patient closes the tab or taps “I’m done” → waiting-room state cleared. An existing share link expires on its own.
 ```
 
 ## 6.2 Journey B — Typed only
@@ -262,8 +271,9 @@ Please seek in-person or emergency care now.
 
 ```text
 [I’m done] or tab close or refresh
-  → in-memory state gone
+  → in-memory waiting-room state gone
   → returning to the URL shows a new empty session, not the note
+  → a share link already created remains until TTL / process restart
 ```
 
 ---
@@ -303,7 +313,8 @@ For the nurse
 A note the patient is showing you from their phone.
 
 AI helped collect these answers. This is not a diagnosis.
-ElezaMD does not keep this when the patient leaves.
+ElezaMD does not keep a patient file.
+A share link, if created, expires.
 
 What they actually feel
 {feel}
@@ -327,8 +338,9 @@ That copy is the clinic’s record, not ElezaMD’s.
 UI actions:
 
 - **Copy note** (plain text)
+- **Share with practitioner** (creates `/share/[code]`; copy link / email)
 - **I’m done** (clear session, back to start)
-- Do not: Find care, Book, Share link, See my result, Browse clinicians
+- Do not: Find care, Book, See my result, Browse clinicians
 
 ---
 
@@ -346,6 +358,11 @@ src/app/
     page.tsx                 # only reachable with in-memory state;
                              # if empty, redirect to landing / waiting-room
                              # MUST NOT read answers from the URL
+  share/[code]/
+    page.tsx                 # practitioner viewer; lookup by opaque code only
+  api/waiting-room/
+    share/route.ts           # POST: store answers in the in-memory TTL map
+    tidy/route.ts            # optional; default unused
   layout.tsx
 ```
 
@@ -355,8 +372,7 @@ Do **not** create:
 
 ```text
 src/app/api/ai/assessment/
-src/app/api/share/
-src/app/share/[shareId]/
+src/app/api/share/           # use /api/waiting-room/share instead
 src/app/patient/             # no telehealth patient portal
 src/app/clinician/           # no clinician workspace
 src/app/api/ai/interview/    # unless you add the optional formatter in §12
@@ -402,6 +418,21 @@ Empty strings mean not yet answered. Do not invent defaults.
 React Context + `useState` / reducer is enough. Do not add a global state library.
 
 **Navigation:** keep the wizard and the note under one client tree so React state is not lost between “questions” and “note.” If you use two routes, lift state to a shared client layout **without** writing to `localStorage`. If the note route is opened cold (no memory), show empty session — never recover from the URL.
+
+## 10.1 Share store
+
+In-memory only, pinned on `globalThis` so App Router chunks share one map.
+
+```ts
+createSharedNote({ answers, didSearch }) → { code, expiresAt }
+getSharedNote(code) → { answers, didSearch, expiresAt } | null
+```
+
+- Opaque codes (no answers in the URL).
+- Default TTL 24 hours (`SHARE_LINK_TTL_MS`).
+- Unknown or expired codes render “no longer available,” not an empty note.
+- Restart / new serverless instance clears the map. That is acceptable for this build.
+- Do not log note content.
 
 ---
 
@@ -513,7 +544,8 @@ This is not a diagnosis. We will not tell you what you have.
 Eleza means explain — you describe, the clinician decides.
 
 Your answers stay on this phone for you to show the nurse.
-When you close this page, ElezaMD keeps nothing.
+When you close this page, this session is gone.
+If you create a share link, that copy lasts until it expires.
 
 If the nurse copies the note into the clinic file,
 that becomes the clinic’s record, not ours.
@@ -534,8 +566,9 @@ Do not hide this behind a footer link.
 
 - Title: ElezaMD — for the nurse, patient-held
 - Labeled blocks: feel, fear, then search / it said if they looked it up
-- Badge: `AI-assisted • Not a diagnosis • We keep nothing`
+- Badge: `AI-assisted • Not a diagnosis • No patient file`
 - Copy note
+- Share with practitioner (creates a short-lived link; copy / email)
 - I’m done
 
 Do not style it like a lab result or “assessment report.” It should look like **the patient’s words**, not a clinical conclusion.
@@ -570,6 +603,7 @@ what they fear it is
 what they actually feel
 AI is involved
 we keep nothing
+no patient file
 eleza / explain
 ```
 
@@ -583,10 +617,11 @@ Q3 may contain words like “cancer” **typed by the patient**. Tests should fl
 export const FEATURES = {
   VOICE: process.env.NEXT_PUBLIC_FEATURE_VOICE === "true",
   TIDY: process.env.NEXT_PUBLIC_FEATURE_TIDY === "true",
+  SHARE_LINK: process.env.NEXT_PUBLIC_FEATURE_SHARE_LINK !== "false",
 };
 ```
 
-Default: voice off, tidy off. The note flow is the whole product (always on).
+Default: voice off, tidy off, share-link **on**. The note flow is the whole product (always on). Share is part of the note screen; set `NEXT_PUBLIC_FEATURE_SHARE_LINK=false` only to hide it.
 
 ---
 
@@ -604,6 +639,8 @@ Required before calling the demo done:
 8. UI strings do not contain “you may have.”
 9. The app has no clinician directory, booking, or “recommended specialty” screen.
 10. Copy note puts the note sections in the clipboard.
+11. Share with practitioner creates an opaque `/share/[code]` URL; the viewer shows the same note; unknown/expired codes show unavailable.
+12. Share does not put answers in the URL.
 
 If tidy API exists: reject payloads that add a conditions array or “you may have.”
 
@@ -618,6 +655,7 @@ If tidy API exists: reject payloads that add a conditions array or “you may ha
 - [ ] Is asked whether they looked this up; search questions only if yes
 - [ ] Gets one page to show the nurse
 - [ ] Can copy the note
+- [ ] Can share a short-lived link with a practitioner
 - [ ] Can type without voice
 - [ ] Emergency path stops the flow without a diagnostic note
 
@@ -625,14 +663,15 @@ If tidy API exists: reject payloads that add a conditions array or “you may ha
 
 - [ ] Can read feel and fear first, then search vs internet if they looked it up
 - [ ] Does not receive a condition list or specialty from ElezaMD
-- [ ] Understands the note is on the patient’s phone
+- [ ] Understands the note is on the patient’s phone, or from a short-lived share link the patient created
 
 ## Privacy
 
-- [ ] No DB, no Redis, no share table
+- [ ] No DB, no Redis, no durable share table
 - [ ] No localStorage of answers
-- [ ] No answers in the URL
-- [ ] Reload/close clears the person from ElezaMD
+- [ ] No answers in the URL (opaque share codes only)
+- [ ] Reload/close clears the waiting-room session
+- [ ] Share store is in-memory with a TTL; expired codes are gone
 
 ## Engineering
 
@@ -647,7 +686,7 @@ If tidy API exists: reject payloads that add a conditions array or “you may ha
 
 **Setup:** Phone or narrow browser. This is the only product you demo for this track.
 
-**One-liner:** ElezaMD — *eleza* means explain. The patient explains; the MD decides. We keep nothing.
+**One-liner:** ElezaMD — *eleza* means explain. The patient explains; the MD decides. No patient file.
 
 **Patient (2am story):**
 
@@ -656,13 +695,13 @@ If tidy API exists: reject payloads that add a conditions array or “you may ha
 > Fear: “a brain tumour”  
 > Feel: “pain behind my eyes since yesterday, worse in light, no fever, I slept badly”
 
-**Show the nurse the note.** Point out four boxes: search, internet, fear, body. Say: we did not tell them what they have; we kept nothing; if you copy this into the file, that’s yours.
+**Show the nurse the note.** Point out four boxes: search, internet, fear, body. Say: we did not tell them what they have; there is no patient file; if you copy this into the clinic file, that’s yours. Optionally create a share link and open it on another device.
 
-**Then:** refresh. Note is gone.
+**Then:** refresh the patient’s tab. The waiting-room note is gone. The share link still works until it expires.
 
 **Emergency (optional):** select chest pain → stop screen, no assessment.
 
-Do not show: another repo’s telehealth matcher, possible migraine likelihood, GP recommendation, nearby clinics, private doctor link.
+Do not show: another repo’s telehealth matcher, possible migraine likelihood, GP recommendation, nearby clinics.
 
 ---
 
@@ -672,17 +711,17 @@ Work only in the new `elezamd` repo.
 
 ### Agent A — App shell + waiting-room flow + note
 
-Scaffold, session state, disclosure, body-first questions with search gate, note, copy, I’m done, emergency checklist UI. Wordmark ElezaMD.
+Scaffold, session state, disclosure, body-first questions with search gate, note, copy, share link, I’m done, emergency checklist UI. Wordmark ElezaMD.
 
 ### Agent B — Tests + copy audit
 
-Forbidden-phrase tests, no-storage checks, emergency-stop unit tests.
+Forbidden-phrase tests, no-durable-storage checks, share TTL unit tests, emergency-stop unit tests.
 
 ### Agent C (optional) — Voice
 
 Push-to-talk into the current question only. No LLM.
 
-**Do not** implement share crypto, LLM assessment, referral ranking, interview APIs, or anything from the telehealth demo.
+**Do not** implement share crypto, Redis, LLM assessment, referral ranking, interview APIs, or anything from the telehealth demo.
 
 Merge order: A → B → C.
 
@@ -699,9 +738,9 @@ Those ideas were for a different product. Do not re-open them in this repo.
 | Claude adaptive interview | Deleted |
 | Preliminary AI assessment / possibleConditions | Deleted |
 | Smart referral | Deleted |
-| Ephemeral encrypted share + doctor viewer | Deleted; show the phone |
+| Ephemeral encrypted share + doctor viewer | Replaced: short-lived opaque `/share/[code]`, in-memory TTL, no Redis/encryption. Show the phone remains the primary handoff. |
 | In-memory session | Kept |
-| No durable medical DB | Strengthened: no relay either |
+| No durable medical DB | Kept; share store is in-memory TTL only |
 | AI disclosure | Kept; first screen, mandatory |
 | Multi-tier safety + specialty routing | Emergency **stop** only, implemented here |
 | “AI assessment, not confirmed diagnosis” | Replaced: **no assessment at all** |
@@ -717,7 +756,7 @@ NEW REPO (elezamd)
 PATIENT PHONE (waiting room)
         │
         ▼
- Disclosure: AI involved, no diagnosis, keep nothing
+ Disclosure: AI involved, no diagnosis, no patient file
         │
         ▼
  Emergency checklist ──yes──► Stop. Seek in-person care.
@@ -729,24 +768,26 @@ PATIENT PHONE (waiting room)
         └── no  → fear
         │
         ▼
- One-page ElezaMD note (in memory only)
+ One-page ElezaMD note (session in memory)
         │
         ├── show nurse
-        └── copy → clinic file (clinic’s record)
+        ├── copy → clinic file (clinic’s record)
+        └── optional share → /share/[code] (in-memory TTL)
         │
         ▼
  Close / I’m done / refresh
         │
         ▼
- ElezaMD holds nothing
+ Waiting-room session gone
+ Share link, if created, expires on its own
 ```
 
 **Desired product:**
 
-> The patient puts down the internet verdict and picks up a description. The nurse starts from what they feel. ElezaMD never had a file.
+> The patient puts down the internet verdict and picks up a description. The nurse starts from what they feel. ElezaMD does not keep a patient file.
 
 ---
 
 # 23. Orchestrator prompt
 
-> Create a **new** Git repository named `elezamd`. Do **not** implement this in `afyanow-telehealth-demo` or any existing telehealth codebase. Scaffold a new Next.js 16 App Router + TypeScript + Tailwind app. Then implement the ElezaMD Waiting-Room Note spec (`SPEC.md`). Inspect the new app’s `node_modules/next/dist/docs/` before writing Next.js APIs. Product name is ElezaMD (eleza = explain; the patient explains, the clinician decides — the app is not a doctor). Build: landing (message-style number) → disclosure → optional emergency checklist → what they feel → did they look this up → search questions only if yes → fear → one-page phone note → copy / I’m done. Keep session state in memory only. No localStorage, no URL payloads, no database, no share relay, no differentials, no specialty recommendation, no clinician matching. Do not create `/api/ai/assessment` or `/api/share`. Do not port files from the telehealth demo. Default off: LLM tidy and cloud STT. Every session must open by saying AI is involved. Add the tests listed in the spec.
+> Create a **new** Git repository named `elezamd`. Do **not** implement this in `afyanow-telehealth-demo` or any existing telehealth codebase. Scaffold a new Next.js 16 App Router + TypeScript + Tailwind app. Then implement the ElezaMD Waiting-Room Note spec (`SPEC.md`). Inspect the new app’s `node_modules/next/dist/docs/` before writing Next.js APIs. Product name is ElezaMD (eleza = explain; the patient explains, the clinician decides — the app is not a doctor). Build: landing (message-style number) → disclosure → optional emergency checklist → what they feel → did they look this up → search questions only if yes → fear → one-page phone note → copy / optional share with practitioner / I’m done. Keep waiting-room session state in memory only. Share links use an opaque `/share/[code]` and an in-memory TTL store (default 24h). No localStorage, no answers in the URL, no database, no Redis, no differentials, no specialty recommendation, no clinician matching. Do not create `/api/ai/assessment`. Use `/api/waiting-room/share` for share, not `/api/share`. Do not port files from the telehealth demo. Default off: LLM tidy and cloud STT. Share-link default on. Every session must open by saying AI is involved. Add the tests listed in the spec.

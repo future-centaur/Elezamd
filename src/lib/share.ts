@@ -19,11 +19,11 @@ type StoredNote = SharedNoteData & {
   expiresAt: number;
 };
 
-// In-memory only: this store lives in the process' heap, so a restart, a
-// redeploy, or a serverless cold start on a second instance loses every
-// shared note. That is a deliberate trade-off for a prototype branch, not a
-// production-ready store — swap this module for a real datastore (with the
-// same TTL/one-time-code semantics) before relying on it beyond a demo.
+// In-memory only (SPEC.md §10.1): this store lives in the process heap, so a
+// restart, a redeploy, or a serverless cold start on a second instance loses
+// every shared note. That is the allowed store for this product — not Redis,
+// not a database. Swap this module only if the spec's TTL/opaque-code
+// semantics are kept.
 //
 // It is pinned on `globalThis` rather than a plain module-scope variable
 // because Next.js's App Router bundles a page route and an API route as

@@ -1,6 +1,6 @@
 # ElezaMD
 
-Waiting-room note. The patient explains; the clinician decides. ElezaMD keeps nothing.
+Waiting-room note. The patient explains; the clinician decides. No patient file.
 
 ```bash
 npm run dev

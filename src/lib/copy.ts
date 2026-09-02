@@ -21,7 +21,9 @@ export const DISCLOSURE = {
     "Eleza means explain — you describe, the clinician decides.",
   stayOnPhone:
     "Your answers stay on this phone for you to show the nurse.",
-  keepNothing: "When you close this page, ElezaMD keeps nothing.",
+  keepNothing: "When you close this page, this session is gone.",
+  shareHint:
+    "If you create a share link, that copy lasts until it expires.",
   clinicRecord:
     "If the nurse copies the note into the clinic file, that becomes the clinic’s record, not ours.",
   continue: "Continue",
@@ -86,10 +88,11 @@ export const NOTE = {
   title: PRODUCT_NAME,
   forTheNurse: "For the nurse",
   intro: "A note the patient is showing you from their phone.",
-  badge: "AI-assisted • Not a diagnosis • We keep nothing",
+  badge: "AI-assisted • Not a diagnosis • No patient file",
   aiHelped:
     "AI helped collect these answers. This is not a diagnosis.",
-  keepNothing: "ElezaMD does not keep this when the patient leaves.",
+  keepNothing:
+    "ElezaMD does not keep a patient file. A share link, if created, expires.",
   searchedLabel: "What they searched",
   itSaidLabel: "What it said",
   fearLabel: "What they fear it is",

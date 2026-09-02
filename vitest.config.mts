@@ -10,6 +10,7 @@ export default defineConfig({
     env: {
       NEXT_PUBLIC_FEATURE_VOICE: "false",
       NEXT_PUBLIC_FEATURE_TIDY: "false",
+      NEXT_PUBLIC_FEATURE_SHARE_LINK: "true",
     },
   },
 });

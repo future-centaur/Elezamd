@@ -23,7 +23,7 @@ describe("formatNote", () => {
     expect(note).toContain(answers.searched);
     expect(note).toContain(answers.itSaid);
     expect(note).toContain("This is not a diagnosis");
-    expect(note).toContain("ElezaMD does not keep this when the patient leaves");
+    expect(note).toContain("ElezaMD does not keep a patient file");
   });
 
   it("omits empty search blocks when they did not look it up", () => {
