@@ -4,7 +4,7 @@ Waiting-room note. The patient explains; the clinician decides. No patient file.
 
 ## Presentation
 
-**[Watch the 51-second presentation →](https://claude.ai/code/artifact/64db05ce-727f-4fd8-9e5f-316400f05532)**
+**[Watch the 51-second presentation →](https://claude.ai/code/artifact/64db05ce-727f-4fd8-9e5f-316400f05532)** · [.mp4 on GitHub](docs/elezamd-presentation.mp4)
 
 | | | | |
 |---|---|---|---|
