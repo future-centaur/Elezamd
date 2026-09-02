@@ -23,61 +23,51 @@ export function AppStage({
       : "stage-atmosphere";
 
   return (
-    <div
-      className={`flex min-h-full flex-1 justify-center px-3 py-4 sm:px-6 sm:py-10 ${atmosphere}`}
-    >
+    <div className={`relative isolate flex min-h-dvh flex-1 flex-col ${atmosphere}`}>
+      <p
+        aria-hidden="true"
+        className={isHero ? "eleza-watermark eleza-watermark--hero" : "eleza-watermark"}
+      >
+        eleza
+      </p>
+
+      {progress ? (
+        <div className="relative z-10 px-5 pt-4 sm:px-10">
+          <ProgressBar
+            aria-label={progress.label}
+            className="progress-corridor w-full"
+            maxValue={progress.maxValue}
+            value={progress.value}
+          >
+            <ProgressBar.Track>
+              <ProgressBar.Fill />
+            </ProgressBar.Track>
+          </ProgressBar>
+        </div>
+      ) : null}
+
+      {isHero ? null : (
+        <header className="relative z-10 flex items-baseline justify-between gap-4 px-5 pt-5 sm:px-10 sm:pt-8">
+          <MotionTransition name="eleza-wordmark" share="morph" default="none">
+            <Link
+              href="/"
+              className="font-display text-2xl font-bold tracking-tight text-foreground"
+            >
+              {CHROME.wordmark}
+            </Link>
+          </MotionTransition>
+          <span className="text-xs font-medium uppercase tracking-[0.18em] text-muted">
+            {CHROME.subtitle}
+          </span>
+        </header>
+      )}
+
       <div
-        className={`flex w-full flex-col ${
-          isHero
-            ? "max-w-2xl justify-center"
-            : "max-w-lg min-h-[min(100dvh-2rem,46rem)] overflow-hidden rounded-3xl bg-background text-foreground shadow-xl"
+        className={`relative z-10 mx-auto flex w-full max-w-3xl flex-1 flex-col px-5 sm:px-10 ${
+          isHero ? "justify-center py-16" : "pb-10 pt-8"
         }`}
       >
-        {isHero ? (
-          <header className="px-1 pb-8">
-            <p className="text-xs font-medium uppercase tracking-[0.18em] text-stage-foreground/70">
-              {CHROME.subtitle}
-            </p>
-          </header>
-        ) : (
-          <header
-            className="flex items-center justify-between gap-4 border-b border-separator px-5 py-3"
-            style={{ viewTransitionName: "site-header" }}
-          >
-            <MotionTransition name="eleza-wordmark" share="morph" default="none">
-              <Link
-                href="/"
-                className="font-semibold tracking-tight text-accent"
-              >
-                {CHROME.wordmark}
-              </Link>
-            </MotionTransition>
-            <span className="text-xs text-muted">{CHROME.subtitle}</span>
-          </header>
-        )}
-
-        {progress ? (
-          <div className="px-5 pt-3">
-            <ProgressBar
-              aria-label={progress.label}
-              className="w-full"
-              maxValue={progress.maxValue}
-              value={progress.value}
-            >
-              <ProgressBar.Track>
-                <ProgressBar.Fill />
-              </ProgressBar.Track>
-            </ProgressBar>
-          </div>
-        ) : null}
-
-        <div
-          className={`flex flex-1 flex-col ${
-            isHero ? "text-stage-foreground" : "px-5 py-5"
-          }`}
-        >
-          {children}
-        </div>
+        {children}
       </div>
     </div>
   );

@@ -35,23 +35,23 @@ export function EmergencyCheckScreen({
   return (
     <div className="flex flex-1 flex-col">
       <fieldset>
-        <legend className="text-xl font-semibold tracking-tight text-foreground">
+        <legend className="font-display text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
           {EMERGENCY_CHECK.title}
         </legend>
-        <p className="mt-2 text-sm leading-6 text-muted">
+        <p className="mt-4 max-w-xl text-base leading-7 text-muted">
           {EMERGENCY_CHECK.hint}
         </p>
-        <ul className="mt-5 space-y-2">
+        <ul className="mt-8 max-w-xl space-y-1">
           {WARNING_SIGNS.map((sign) => {
             const isSelected = selected.includes(sign.id);
             return (
               <li key={sign.id}>
                 <Checkbox
                   aria-label={sign.label}
-                  className={`warning-card w-full rounded-xl border px-3 py-3 ${
+                  className={`warning-card w-full border-l-2 py-3 pl-3 ${
                     isSelected
-                      ? "warning-card--selected border-accent bg-accent-soft"
-                      : "border-border bg-surface"
+                      ? "warning-card--selected border-accent"
+                      : "border-transparent"
                   }`}
                   isSelected={isSelected}
                   onChange={() => toggle(sign.id)}
@@ -69,10 +69,10 @@ export function EmergencyCheckScreen({
           <li>
             <Checkbox
               aria-label={EMERGENCY_CHECK.none}
-              className={`warning-card w-full rounded-xl border px-3 py-3 ${
+              className={`warning-card w-full border-l-2 py-3 pl-3 ${
                 selected.includes(NONE_WARNING_ID)
-                  ? "warning-card--selected border-accent bg-accent-soft"
-                  : "border-border bg-surface"
+                  ? "warning-card--selected border-accent"
+                  : "border-transparent"
               }`}
               isSelected={selected.includes(NONE_WARNING_ID)}
               onChange={() => toggle(NONE_WARNING_ID)}
@@ -87,13 +87,12 @@ export function EmergencyCheckScreen({
           </li>
         </ul>
       </fieldset>
-      <div className="mt-auto flex gap-3 pt-6">
-        <Button fullWidth size="lg" variant="secondary" onPress={onBack}>
+      <div className="screen-actions">
+        <Button size="lg" variant="ghost" onPress={onBack}>
           {EMERGENCY_CHECK.back}
         </Button>
         <Button
           className={canContinue ? "cta-focus" : undefined}
-          fullWidth
           isDisabled={!canContinue}
           size="lg"
           onPress={() => onContinue(selected)}

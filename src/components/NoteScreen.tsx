@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Button } from "@heroui/react/button";
-import { Card } from "@heroui/react/card";
 import { Chip } from "@heroui/react/chip";
 import { NOTE } from "@/lib/copy";
 import { copyText } from "@/lib/clipboard";
@@ -25,54 +24,48 @@ export function NoteScreen({ answers, didSearch, onDone }: NoteScreenProps) {
 
   return (
     <div className="flex flex-1 flex-col">
-      <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted">
+      <p className="font-display text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
         {NOTE.forTheNurse}
       </p>
-      <h1 className="mt-1 text-2xl font-semibold tracking-tight text-foreground">
+      <h1 className="mt-2 text-lg font-bold tracking-tight text-foreground">
         {NOTE.title}
       </h1>
-      <p className="mt-1 text-sm text-muted">{NOTE.intro}</p>
-      <Chip className="mt-3 self-start" size="sm">
-        {NOTE.badge}
-      </Chip>
-      <p className="mt-4 text-sm leading-6 text-muted">
-        {NOTE.aiHelped} {NOTE.keepNothing}
-      </p>
+      <p className="mt-2 max-w-xl text-base text-muted">{NOTE.intro}</p>
 
-      <section className="mt-5 space-y-4">
-        <NoteBlock label={NOTE.feelLabel} text={answers.feel} />
-        <NoteBlock label={NOTE.fearLabel} quoted text={answers.fear} />
-        {didSearch ? (
-          <>
-            <NoteBlock label={NOTE.searchedLabel} text={answers.searched} />
-            <NoteBlock label={NOTE.itSaidLabel} text={answers.itSaid} />
-          </>
-        ) : (
-          <Card>
-            <Card.Content>
-              <p className="text-sm leading-6 text-foreground">
-                {NOTE.didNotSearch}
-              </p>
-            </Card.Content>
-          </Card>
-        )}
-      </section>
+      <article className="note-sheet mt-8 max-w-xl px-5 py-6 sm:px-7 sm:py-8">
+        <Chip size="sm">{NOTE.badge}</Chip>
+        <p className="mt-4 text-sm leading-6 text-muted">
+          {NOTE.aiHelped} {NOTE.keepNothing}
+        </p>
 
-      <p className="mt-5 text-xs leading-5 text-muted">{NOTE.clinicHint}</p>
+        <div className="mt-6 space-y-5">
+          <NoteBlock label={NOTE.feelLabel} text={answers.feel} />
+          <NoteBlock label={NOTE.fearLabel} quoted text={answers.fear} />
+          {didSearch ? (
+            <>
+              <NoteBlock label={NOTE.searchedLabel} text={answers.searched} />
+              <NoteBlock label={NOTE.itSaidLabel} text={answers.itSaid} />
+            </>
+          ) : (
+            <p className="text-base leading-7">{NOTE.didNotSearch}</p>
+          )}
+        </div>
+      </article>
 
-      <div className="mt-auto flex flex-col gap-3 pt-6">
+      <p className="mt-5 max-w-xl text-xs leading-5 text-muted">{NOTE.clinicHint}</p>
+
+      <div className="screen-actions">
+        <Button size="lg" variant="ghost" onPress={onDone}>
+          {NOTE.imDone}
+        </Button>
         <Button
           className="cta-focus"
-          fullWidth
           size="lg"
           onPress={() => {
             void copyNote();
           }}
         >
           {copied ? NOTE.copied : NOTE.copyNote}
-        </Button>
-        <Button fullWidth size="lg" variant="tertiary" onPress={onDone}>
-          {NOTE.imDone}
         </Button>
       </div>
     </div>
@@ -89,19 +82,15 @@ function NoteBlock({
   quoted?: boolean;
 }) {
   return (
-    <Card>
-      <Card.Header>
-        <Card.Title className="text-xs font-medium uppercase tracking-[0.12em] text-muted">
-          {label}
-        </Card.Title>
-      </Card.Header>
+    <section>
+      <h2 className="text-xs font-medium uppercase tracking-[0.14em] text-muted">
+        {label}
+      </h2>
       {text ? (
-        <Card.Content>
-          <p className="whitespace-pre-wrap text-sm leading-6 text-foreground">
-            {quoted ? `“${text}”` : text}
-          </p>
-        </Card.Content>
+        <p className="mt-1 whitespace-pre-wrap text-base leading-7">
+          {quoted ? `“${text}”` : text}
+        </p>
       ) : null}
-    </Card>
+    </section>
   );
 }

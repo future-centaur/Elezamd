@@ -16,18 +16,18 @@ export function SearchGateScreen({
 }: SearchGateScreenProps) {
   return (
     <div className="flex flex-1 flex-col">
-      <h1 className="text-xl font-semibold tracking-tight text-foreground">
+      <h1 className="font-display max-w-xl text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
         {SEARCH_GATE.title}
       </h1>
-      <p className="mt-2 text-sm leading-6 text-muted">{SEARCH_GATE.hint}</p>
-      <div className="mt-auto flex flex-col gap-3 pt-6">
-        <Button className="cta-focus" fullWidth size="lg" onPress={onYes}>
+      <p className="mt-4 max-w-xl text-base leading-7 text-muted">{SEARCH_GATE.hint}</p>
+      <div className="mt-auto flex flex-col items-start gap-3 pt-10">
+        <Button className="cta-focus" size="lg" onPress={onYes}>
           {SEARCH_GATE.yes}
         </Button>
-        <Button fullWidth size="lg" variant="secondary" onPress={onNo}>
+        <Button size="lg" variant="secondary" onPress={onNo}>
           {SEARCH_GATE.no}
         </Button>
-        <Button fullWidth size="lg" variant="tertiary" onPress={onBack}>
+        <Button size="lg" variant="ghost" onPress={onBack}>
           {SEARCH_GATE.back}
         </Button>
       </div>

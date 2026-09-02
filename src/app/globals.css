@@ -2,30 +2,53 @@
 @import "@heroui/styles";
 
 :root {
-  --stage: oklch(0.18 0.018 50);
-  --stage-foreground: oklch(0.94 0.012 90);
-  --paper: oklch(0.97 0.014 90);
-  --background: oklch(0.97 0.014 90);
-  --foreground: oklch(0.22 0.02 50);
-  --surface: oklch(0.995 0.006 90);
+  --dawn: oklch(0.78 0.028 55);
+  --linoleum: oklch(0.84 0.014 145);
+  --ink: oklch(0.22 0.014 80);
+  --stamp: oklch(0.42 0.068 180);
+  --sodium: oklch(0.68 0.13 60);
+  --tape: oklch(0.52 0.16 30);
+  --sheet: oklch(0.94 0.016 85);
+
+  --background: var(--linoleum);
+  --foreground: var(--ink);
+  --surface: color-mix(in oklab, var(--linoleum) 82%, var(--snow) 18%);
   --surface-foreground: var(--foreground);
-  --accent: oklch(0.48 0.09 185);
+  --accent: var(--stamp);
   --accent-foreground: var(--snow);
-  --danger: oklch(0.58 0.2 28);
+  --danger: var(--tape);
   --danger-foreground: var(--snow);
-  --muted: oklch(0.5 0.02 50);
-  --radius: 0.75rem;
-  --focus: var(--accent);
+  --warning: var(--sodium);
+  --warning-foreground: var(--ink);
+  --muted: oklch(0.42 0.02 80);
+  --default: color-mix(in oklab, var(--linoleum) 88%, var(--ink) 12%);
+  --default-foreground: var(--ink);
+  --border: color-mix(in oklab, var(--ink) 16%, var(--linoleum) 84%);
+  --separator: color-mix(in oklab, var(--ink) 12%, var(--linoleum) 88%);
+  --field-background: color-mix(in oklab, var(--linoleum) 70%, var(--snow) 30%);
+  --field-foreground: var(--ink);
+  --field-border: color-mix(in oklab, var(--ink) 22%, transparent);
+  --field-border-width: 1px;
+  --radius: 0.15rem;
+  --focus: var(--sodium);
+  --surface-shadow: none;
+  --field-shadow: none;
+  --overlay-shadow: none;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-stage: var(--stage);
-  --color-stage-foreground: var(--stage-foreground);
-  --color-paper: var(--paper);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-border: var(--border);
+  --color-surface: var(--surface);
+  --color-sheet: var(--sheet);
+  --color-sodium: var(--sodium);
+  --color-dawn: var(--dawn);
+  --font-sans: var(--font-body);
+  --font-display: var(--font-poster);
+  --font-mono: var(--font-mono);
 }
 
 html,
@@ -34,9 +57,9 @@ body {
 }
 
 body {
-  background: var(--stage);
+  background: var(--linoleum);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-body), Arial, Helvetica, sans-serif;
 }
 
 .sr-only {
@@ -51,76 +74,107 @@ body {
   border: 0;
 }
 
+.button {
+  border-radius: var(--radius);
+}
+
 .stage-atmosphere {
   background:
-    radial-gradient(
-      1200px 620px at 18% -8%,
-      oklch(0.36 0.07 185 / 0.38),
-      transparent 58%
+    linear-gradient(
+      105deg,
+      color-mix(in oklab, var(--dawn) 62%, transparent) 0%,
+      transparent 46%
     ),
-    radial-gradient(
-      900px 520px at 92% 112%,
-      oklch(0.34 0.08 50 / 0.32),
-      transparent 54%
-    ),
-    var(--stage);
-  background-size: 140% 140%;
-  animation: stage-drift 18s ease-in-out infinite alternate;
+    linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--linoleum) 88%, var(--snow) 12%) 0%,
+      var(--linoleum) 58%,
+      color-mix(in oklab, var(--linoleum) 92%, var(--sodium) 8%) 100%
+    );
 }
 
 .stage-atmosphere--danger {
   background:
-    radial-gradient(
-      1000px 560px at 20% -10%,
-      oklch(0.42 0.16 28 / 0.42),
-      transparent 58%
-    ),
-    radial-gradient(
-      800px 480px at 90% 110%,
-      oklch(0.3 0.08 40 / 0.28),
-      transparent 55%
-    ),
-    var(--stage);
+    linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--tape) 22%, var(--linoleum) 78%) 0%,
+      var(--linoleum) 55%
+    );
 }
 
-@keyframes stage-drift {
-  from {
-    background-position:
-      0% 0%,
-      100% 100%,
-      0 0;
-  }
-  to {
-    background-position:
-      18% 12%,
-      82% 88%,
-      0 0;
-  }
+.eleza-watermark {
+  position: absolute;
+  inset: auto -4vw 8vh auto;
+  z-index: 0;
+  margin: 0;
+  font-family: var(--font-poster), Impact, sans-serif;
+  font-size: clamp(6rem, 22vw, 14rem);
+  font-weight: 800;
+  line-height: 0.75;
+  letter-spacing: -0.07em;
+  color: color-mix(in oklab, var(--ink) 8%, transparent);
+  pointer-events: none;
+  user-select: none;
+}
+
+.eleza-watermark--hero {
+  inset: 8vh -6vw auto auto;
+  font-size: clamp(8rem, 28vw, 18rem);
+  color: color-mix(in oklab, var(--ink) 11%, transparent);
+}
+
+.progress-corridor {
+  --progress-bar-fill: var(--sodium);
+}
+
+.progress-corridor .progress-bar__track {
+  height: 3px;
+  border-radius: 0;
+  background: color-mix(in oklab, var(--ink) 12%, transparent);
+}
+
+.progress-corridor .progress-bar__fill {
+  border-radius: 0;
+}
+
+.screen-actions {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: auto;
+  padding-top: 2.5rem;
+}
+
+.note-sheet {
+  background: var(--sheet);
+  color: var(--ink);
+  border: 1px solid color-mix(in oklab, var(--ink) 14%, transparent);
+  box-shadow: 0.4rem 0.5rem 0 0 color-mix(in oklab, var(--ink) 10%, transparent);
 }
 
 .cta-focus:not([aria-disabled="true"]):not([data-disabled="true"]):not(:disabled) {
-  animation: cta-pulse 2.6s ease-in-out infinite;
+  animation: stamp-press 2.8s ease-in-out infinite;
 }
 
-@keyframes cta-pulse {
+@keyframes stamp-press {
   0%,
   100% {
-    box-shadow: 0 0 0 0 oklch(0.48 0.09 185 / 0.38);
+    box-shadow: 2px 2px 0 0 color-mix(in oklab, var(--ink) 16%, transparent);
   }
   50% {
-    box-shadow: 0 0 0 10px oklch(0.48 0.09 185 / 0);
+    box-shadow: 3px 4px 0 0 color-mix(in oklab, var(--stamp) 42%, transparent);
   }
 }
 
 .warning-card {
   transition:
     border-color 200ms ease,
-    background-color 200ms ease,
-    transform 200ms ease;
+    background-color 200ms ease;
 }
 
 .warning-card--selected {
-  transform: scale(1.01);
+  background: color-mix(in oklab, var(--stamp) 8%, transparent);
 }
 
 .tidying-label {
@@ -197,19 +251,11 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .stage-atmosphere {
-    animation: none;
-  }
-
   .cta-focus,
   .tidying-label,
   .warning-card {
     animation: none;
     transition: none;
-  }
-
-  .warning-card--selected {
-    transform: none;
   }
 
   ::view-transition-old(*),

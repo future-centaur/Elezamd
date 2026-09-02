@@ -45,7 +45,9 @@ describe("WaitingRoomClient tidy", () => {
         expect.objectContaining({ method: "POST" }),
       );
     });
-    expect(screen.getByText(SEARCH_GATE.title)).toBeDefined();
+    await waitFor(() => {
+      expect(screen.getByText(SEARCH_GATE.title)).toBeDefined();
+    });
 
     await user.click(screen.getByRole("button", { name: SEARCH_GATE.yes }));
     expect(screen.getByText("2 of 4")).toBeDefined();
