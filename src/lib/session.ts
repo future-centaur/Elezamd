@@ -2,6 +2,7 @@ export type WaitingRoomStatus =
   | "disclosure"
   | "emergency_check"
   | "asking"
+  | "search_gate"
   | "note"
   | "emergency_stop"
   | "ended";
@@ -20,15 +21,37 @@ export type WaitingRoomSession = {
   status: WaitingRoomStatus;
   currentQuestion: QuestionId | null;
   answers: WaitingRoomAnswers;
+  didSearch: boolean | null;
   emergencyStop: boolean;
 };
 
-export const QUESTION_ORDER: QuestionId[] = [
+export const QUESTION_IDS: QuestionId[] = [
   "searched",
   "itSaid",
   "fear",
   "feel",
 ];
+
+export function questionPath(didSearch: boolean): QuestionId[] {
+  if (didSearch) {
+    return ["feel", "searched", "itSaid", "fear"];
+  }
+
+  return ["feel", "fear"];
+}
+
+export function questionProgress(
+  questionId: QuestionId,
+  didSearch: boolean | null,
+): { current: number; total: number } {
+  const path = questionPath(didSearch !== false);
+  const index = path.indexOf(questionId);
+
+  return {
+    current: index >= 0 ? index + 1 : 1,
+    total: path.length,
+  };
+}
 
 export function createEmptySession(): WaitingRoomSession {
   return {
@@ -41,6 +64,7 @@ export function createEmptySession(): WaitingRoomSession {
       fear: "",
       feel: "",
     },
+    didSearch: null,
     emergencyStop: false,
   };
 }

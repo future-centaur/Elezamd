@@ -1,4 +1,4 @@
-import { QUESTION_ORDER, type QuestionId } from "./session";
+import { QUESTION_IDS, type QuestionId } from "./session";
 
 const TIDY_DENY = [
   "you may have",
@@ -16,7 +16,7 @@ const TIDY_DENY = [
 export function isQuestionId(value: unknown): value is QuestionId {
   return (
     typeof value === "string" &&
-    QUESTION_ORDER.includes(value as QuestionId)
+    QUESTION_IDS.includes(value as QuestionId)
   );
 }
 

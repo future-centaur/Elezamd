@@ -28,7 +28,8 @@ export const DISCLOSURE = {
 };
 
 export const EMERGENCY_CHECK = {
-  title: "Are you having any of these right now?",
+  title: "Is any of this happening right now?",
+  hint: "These are warning signs. If one is happening, do not wait in the queue.",
   none: "None of these",
   continue: "Continue",
   back: "Back",
@@ -38,6 +39,14 @@ export const EMERGENCY_STOP = {
   title: "Please seek care now",
   body: "Based on what you selected, this is not something to wait on in a queue. Please seek in-person or emergency care now.",
   done: "I’m done",
+};
+
+export const SEARCH_GATE = {
+  title: "Did you look this up before coming in?",
+  hint: "Google, ChatGPT, or another app — about what you just described.",
+  yes: "Yes",
+  no: "No",
+  back: "Back",
 };
 
 export const QUESTIONS: Record<
@@ -59,7 +68,7 @@ export const QUESTIONS: Record<
   feel: {
     title: "What you actually feel",
     prompt:
-      "Never mind the search. What do you actually feel in your body — where, since when, and what changed?",
+      "What do you actually feel in your body — where, since when, and what changed?",
   },
 };
 
@@ -85,6 +94,7 @@ export const NOTE = {
   itSaidLabel: "What it said",
   fearLabel: "What they fear it is",
   feelLabel: "What they actually feel",
+  didNotSearch: "They did not look this up before this visit",
   clinicHint:
     "If you need this in the clinic file, copy it there. That copy is the clinic’s record, not ElezaMD’s.",
   copyNote: "Copy note",

@@ -22,7 +22,7 @@ This spec is what you build. The previous voice-consultation / differential / sm
 
 ElezaMD is a **waiting-room note**, not a telehealth matcher and not a diagnostic assistant.
 
-The patient messages in (or opens a phone page) **after searching symptoms**. Four questions separate the internet verdict from what they actually feel. One page stays **on their phone** to show the nurse. ElezaMD does not diagnose, does not pick a clinician, and does not keep the answers.
+The patient messages in (or opens a phone page) in the waiting room. They describe what they feel first. Only if they looked this up online do we collect the internet verdict. One page stays **on their phone** to show the nurse. ElezaMD does not diagnose, does not pick a clinician, and does not keep the answers.
 
 ```text
 Waiting room
@@ -31,7 +31,14 @@ Open / message-style entry
       ↓
 “AI is involved. We do not diagnose. We keep nothing.”
       ↓
-Four questions
+Warning-sign check
+      ↓
+What they actually feel
+      ↓
+Did they look this up?
+      ↓
+If yes: searched → it said → fear
+If no: fear
       ↓
 One-page note on this phone
       ↓
@@ -73,7 +80,7 @@ node_modules/next/dist/docs/
 
 before writing routes, layouts, caching, client/server boundaries, or navigation. Do not copy stale Next.js 13/14 patterns from memory.
 
-The judged journey is the entire app: waiting-room entry → four questions → phone note.
+The judged journey is the entire app: waiting-room entry → feel → search gate → path questions → phone note.
 
 ---
 
@@ -81,14 +88,14 @@ The judged journey is the entire app: waiting-room entry → four questions → 
 
 ## G1 — Help the patient describe, so the nurse can decide
 
-Collect four answers only:
+Collect answers in this order:
 
-1. What they **searched**
-2. What **it said**
-3. What they **fear it is**
-4. What they **actually feel**
+1. What they **actually feel**
+2. Whether they **looked this up** before coming in
+3. If yes: what they **searched**, what **it said**, what they **fear it is**
+4. If no: what they **fear it is** (search sections omitted)
 
-The note presents those facts. The nurse starts from symptoms and context, not from ElezaMD’s opinion.
+The note presents those facts, body first. The nurse starts from symptoms and context, not from ElezaMD’s opinion.
 
 ## G2 — No diagnosis, no verdict, no list of conditions
 
@@ -193,8 +200,8 @@ Non-negotiable. A build that violates any of these fails the track.
 |---|---|
 | **ElezaMD** | The product. Patient explains; clinician decides. |
 | **Waiting-room session** | In-memory interaction. Not a durable entity. |
-| **The four questions** | Search / it said / fear / feel. Fixed. Do not add intake steps. |
-| **Phone note** | Single page of those four answers for the nurse. |
+| **The questions** | Feel first, then a yes/no search gate. Search / it said only if they looked it up. Fear always. Do not add extra intake steps. |
+| **Phone note** | Single page for the nurse. Body and fear first; search blocks only if they searched. |
 | **Internet verdict** | What search/AI/Dr Google told the patient (Q2/Q3). Treated as **their** story, not ours. |
 | **Emergency stop** | Hard stop: in-person/emergency care now. No note-as-diagnosis. |
 
@@ -217,8 +224,10 @@ Do not use: Care Event, AI Assessment, Referral Recommendation, Ephemeral Care S
 3. Optional: short emergency warning-sign check
    (chest pain, severe breathing difficulty, severe bleeding, loss of consciousness).
    If any selected → Journey C.
-4. Four questions, one at a time (type; voice optional).
-5. Phone note (one page).
+4. What they actually feel, then: did they look this up before coming in?
+   Yes → searched → it said → fear.
+   No → fear.
+5. Phone note (one page). Body first. Search blocks only if they searched.
 6. Patient shows the phone to the nurse.
 7. Optional: Copy note.
 8. Patient closes the tab or taps “I’m done” → state cleared.
@@ -233,7 +242,7 @@ Same as A without microphone. Typing is first-class, not a fallback.
 If a warning sign is selected, or committed text clearly reports one (if you parse at all):
 
 ```text
-Stop the four questions.
+Stop the questions.
 Do not generate a note that looks like an assessment.
 Show: seek in-person or emergency care now.
 Do not name a condition.
@@ -259,23 +268,28 @@ Please seek in-person or emergency care now.
 
 ---
 
-# 7. The Four Questions (locked copy)
+# 7. The Questions
 
 Use this wording unless a clinician on the team tightens it without adding medical questions.
 
-**Q1 — What you searched**  
+**Feel first — What you actually feel**  
+“What do you actually feel in your body — where, since when, and what changed?”
+
+**Search gate**  
+“Did you look this up before coming in?”  
+Hint: “Google, ChatGPT, or another app — about what you just described.”  
+Yes / No.
+
+**If yes — What you searched**  
 “What did you type into Google, ChatGPT, or another app?”
 
-**Q2 — What it said**  
+**If yes — What it said**  
 “What did it tell you? Paste or say it in your own words.”
 
-**Q3 — What you fear it is**  
+**Always — What you fear it is**  
 “What are you afraid this is?”
 
-**Q4 — What you actually feel**  
-“Never mind the search. What do you actually feel in your body — where, since when, and what changed?”
-
-Do not add: who needs care, existing conditions lists, medication pickers, specialty, duration/severity as a routing engine. Duration and body feeling belong **inside Q4 as free text**.
+Do not add: who needs care, existing conditions lists, medication pickers, specialty, duration/severity as a routing engine. Duration and body feeling belong **inside the feel question as free text**.
 
 ---
 
@@ -291,17 +305,20 @@ A note the patient is showing you from their phone.
 AI helped collect these answers. This is not a diagnosis.
 ElezaMD does not keep this when the patient leaves.
 
-What they searched
-{q1}
-
-What it said
-{q2}
+What they actually feel
+{feel}
 
 What they fear it is
-{q3}
+{fear}
 
-What they actually feel
-{q4}
+What they searched
+{searched — only if they looked it up}
+
+What it said
+{it said — only if they looked it up}
+
+They did not look this up before this visit
+{only if they did not search}
 
 If you need this in the clinic file, copy it there.
 That copy is the clinic’s record, not ElezaMD’s.
@@ -358,6 +375,7 @@ export type WaitingRoomStatus =
   | "disclosure"
   | "emergency_check"
   | "asking"
+  | "search_gate"
   | "note"
   | "emergency_stop"
   | "ended";
@@ -374,6 +392,7 @@ export type WaitingRoomSession = {
     fear: string;
     feel: string;
   };
+  didSearch: boolean | null;
   emergencyStop: boolean;
 };
 ```
@@ -392,10 +411,11 @@ Only the **emergency warning-sign stop** is in scope. Implement it here; do not 
 
 ## 11.1 Checklist (preferred)
 
-Before Q1, one screen:
+Before the body question, one screen:
 
 ```text
-Are you having any of these right now?
+Is any of this happening right now?
+These are warning signs. If one is happening, do not wait in the queue.
 - Chest pain or pressure
 - Difficulty breathing
 - Severe bleeding
@@ -438,7 +458,7 @@ If the team insists on “AI helped describe”:
 Allowed:
 
 - Correct obvious speech-to-text errors in **the current answer only**
-- Break Q4 into readable sentences **without adding facts**
+- Break the feel answer into readable sentences **without adding facts**
 
 Forbidden:
 
@@ -447,7 +467,7 @@ Forbidden:
 - Inferring symptoms they did not state
 - Filling empty questions
 - “You may have…”
-- Summaries that replace Q1–Q4 with a clinical impression
+- Summaries that replace the patient’s answers with a clinical impression
 
 If an API exists:
 
@@ -473,7 +493,7 @@ The track’s stated shape is a number in the waiting room.
 MVP that judges can operate:
 
 1. Landing card: a demo number (e.g. WhatsApp-style) and “Message to start”
-2. Tapping it opens the disclosure + four-question flow (web chat UI is fine)
+2. Tapping it opens the disclosure + waiting-room flow (web chat UI is fine)
 
 Do not require a real SMS gateway. A simulated thread is enough if the **questions and note** are real.
 
@@ -507,13 +527,13 @@ Do not hide this behind a footer link.
 - One question visible
 - Back (clears nothing already typed unless they edit)
 - Continue disabled until non-empty trim
-- Progress: 1 of 4 … 4 of 4
+- Progress: current of path length (4 if they searched, 2 if they did not)
 - Optional mic on each question
 
 ## 14.3 Note screen
 
 - Title: ElezaMD — for the nurse, patient-held
-- Four labeled blocks
+- Labeled blocks: feel, fear, then search / it said if they looked it up
 - Badge: `AI-assisted • Not a diagnosis • We keep nothing`
 - Copy note
 - I’m done
@@ -574,7 +594,7 @@ Default: voice off, tidy off. The note flow is the whole product (always on).
 
 Required before calling the demo done:
 
-1. Completing Q1–Q4 shows all four answers on the note, unmodified (if tidy off).
+1. Completing the yes path (feel → searched → it said → fear) shows those answers on the note, unmodified (if tidy off). Completing the no path omits search blocks.
 2. Refresh on the note (or home) does not restore answers.
 3. I’m done returns to disclosure with empty fields.
 4. Emergency checklist interrupts; no condition named.
@@ -583,7 +603,7 @@ Required before calling the demo done:
 7. UI strings contain “AI” / “AI is involved” on the first step.
 8. UI strings do not contain “you may have.”
 9. The app has no clinician directory, booking, or “recommended specialty” screen.
-10. Copy note puts the four sections in the clipboard.
+10. Copy note puts the note sections in the clipboard.
 
 If tidy API exists: reject payloads that add a conditions array or “you may have.”
 
@@ -594,7 +614,8 @@ If tidy API exists: reject payloads that add a conditions array or “you may ha
 ## Patient
 
 - [ ] Sees AI disclosure before any question
-- [ ] Answers exactly four questions
+- [ ] Describes what they feel before being asked about search
+- [ ] Is asked whether they looked this up; search questions only if yes
 - [ ] Gets one page to show the nurse
 - [ ] Can copy the note
 - [ ] Can type without voice
@@ -602,7 +623,7 @@ If tidy API exists: reject payloads that add a conditions array or “you may ha
 
 ## Nurse (demo)
 
-- [ ] Can read search vs internet vs fear vs feel as separate blocks
+- [ ] Can read feel and fear first, then search vs internet if they looked it up
 - [ ] Does not receive a condition list or specialty from ElezaMD
 - [ ] Understands the note is on the patient’s phone
 
@@ -651,7 +672,7 @@ Work only in the new `elezamd` repo.
 
 ### Agent A — App shell + waiting-room flow + note
 
-Scaffold, session state, disclosure, four questions, note, copy, I’m done, emergency checklist UI. Wordmark ElezaMD.
+Scaffold, session state, disclosure, body-first questions with search gate, note, copy, I’m done, emergency checklist UI. Wordmark ElezaMD.
 
 ### Agent B — Tests + copy audit
 
@@ -674,7 +695,7 @@ Those ideas were for a different product. Do not re-open them in this repo.
 | Previous spec | This spec |
 |---|---|
 | Build in the telehealth demo repo | **New repo (`elezamd`)** |
-| Voice consultation | Optional mic on four questions |
+| Voice consultation | Optional mic on each question |
 | Claude adaptive interview | Deleted |
 | Preliminary AI assessment / possibleConditions | Deleted |
 | Smart referral | Deleted |
@@ -702,7 +723,10 @@ PATIENT PHONE (waiting room)
  Emergency checklist ──yes──► Stop. Seek in-person care.
         │ no
         ▼
- Q1 searched → Q2 it said → Q3 fear → Q4 feel
+ Feel → Did you look this up?
+        │
+        ├── yes → searched → it said → fear
+        └── no  → fear
         │
         ▼
  One-page ElezaMD note (in memory only)
@@ -725,4 +749,4 @@ PATIENT PHONE (waiting room)
 
 # 23. Orchestrator prompt
 
-> Create a **new** Git repository named `elezamd`. Do **not** implement this in `afyanow-telehealth-demo` or any existing telehealth codebase. Scaffold a new Next.js 16 App Router + TypeScript + Tailwind app. Then implement the ElezaMD Waiting-Room Note spec (`SPEC.md`). Inspect the new app’s `node_modules/next/dist/docs/` before writing Next.js APIs. Product name is ElezaMD (eleza = explain; the patient explains, the clinician decides — the app is not a doctor). Build: landing (message-style number) → disclosure → optional emergency checklist → four locked questions → one-page phone note → copy / I’m done. Keep session state in memory only. No localStorage, no URL payloads, no database, no share relay, no differentials, no specialty recommendation, no clinician matching. Do not create `/api/ai/assessment` or `/api/share`. Do not port files from the telehealth demo. Default off: LLM tidy and cloud STT. Every session must open by saying AI is involved. Add the tests listed in the spec.
+> Create a **new** Git repository named `elezamd`. Do **not** implement this in `afyanow-telehealth-demo` or any existing telehealth codebase. Scaffold a new Next.js 16 App Router + TypeScript + Tailwind app. Then implement the ElezaMD Waiting-Room Note spec (`SPEC.md`). Inspect the new app’s `node_modules/next/dist/docs/` before writing Next.js APIs. Product name is ElezaMD (eleza = explain; the patient explains, the clinician decides — the app is not a doctor). Build: landing (message-style number) → disclosure → optional emergency checklist → what they feel → did they look this up → search questions only if yes → fear → one-page phone note → copy / I’m done. Keep session state in memory only. No localStorage, no URL payloads, no database, no share relay, no differentials, no specialty recommendation, no clinician matching. Do not create `/api/ai/assessment` or `/api/share`. Do not port files from the telehealth demo. Default off: LLM tidy and cloud STT. Every session must open by saying AI is involved. Add the tests listed in the spec.

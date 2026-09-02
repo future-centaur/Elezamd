@@ -7,6 +7,7 @@ import { EmergencyStopScreen } from "@/components/EmergencyStopScreen";
 import { NoteScreen } from "@/components/NoteScreen";
 import { PhoneShell } from "@/components/PhoneShell";
 import { QuestionScreen } from "@/components/QuestionScreen";
+import { SearchGateScreen } from "@/components/SearchGateScreen";
 import { FEATURES } from "@/lib/features";
 import { createEmptySession } from "@/lib/session";
 import { waitingRoomReducer } from "@/lib/waiting-room-reducer";
@@ -95,6 +96,7 @@ export function WaitingRoomClient() {
       {session.status === "asking" && currentQuestion ? (
         <QuestionScreen
           questionId={currentQuestion}
+          didSearch={session.didSearch}
           value={session.answers[currentQuestion]}
           tidying={tidying}
           onChange={(text) =>
@@ -109,8 +111,20 @@ export function WaitingRoomClient() {
         />
       ) : null}
 
+      {session.status === "search_gate" ? (
+        <SearchGateScreen
+          onBack={() => dispatch({ type: "BACK_FROM_SEARCH_GATE" })}
+          onYes={() => dispatch({ type: "SET_DID_SEARCH", didSearch: true })}
+          onNo={() => dispatch({ type: "SET_DID_SEARCH", didSearch: false })}
+        />
+      ) : null}
+
       {session.status === "note" ? (
-        <NoteScreen answers={session.answers} onDone={finish} />
+        <NoteScreen
+          answers={session.answers}
+          didSearch={session.didSearch === true}
+          onDone={finish}
+        />
       ) : null}
     </PhoneShell>
   );

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { QUESTION_UI, QUESTIONS } from "@/lib/copy";
 import { FEATURES } from "@/lib/features";
-import { QUESTION_ORDER, type QuestionId } from "@/lib/session";
+import { questionProgress, type QuestionId } from "@/lib/session";
 import {
   commitVoice,
   getSpeechRecognitionCtor,
@@ -14,6 +14,7 @@ import {
 
 type QuestionScreenProps = {
   questionId: QuestionId;
+  didSearch: boolean | null;
   value: string;
   tidying?: boolean;
   onChange: (text: string) => void;
@@ -23,6 +24,7 @@ type QuestionScreenProps = {
 
 export function QuestionScreen({
   questionId,
+  didSearch,
   value,
   tidying = false,
   onChange,
@@ -30,7 +32,7 @@ export function QuestionScreen({
   onContinue,
 }: QuestionScreenProps) {
   const question = QUESTIONS[questionId];
-  const index = QUESTION_ORDER.indexOf(questionId);
+  const progress = questionProgress(questionId, didSearch);
   const canContinue = value.trim().length > 0 && !tidying;
   const [speechAvailable, setSpeechAvailable] = useState(FEATURES.VOICE);
   const [listening, setListening] = useState(false);
@@ -104,7 +106,7 @@ export function QuestionScreen({
   return (
     <div className="flex flex-1 flex-col">
       <p className="text-xs font-medium uppercase tracking-[0.16em] text-stone-500">
-        {QUESTION_UI.progress(index + 1, QUESTION_ORDER.length)}
+        {QUESTION_UI.progress(progress.current, progress.total)}
       </p>
       <h1 className="mt-2 text-xl font-semibold tracking-tight text-stone-900">
         {question.title}

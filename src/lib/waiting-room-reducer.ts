@@ -1,7 +1,7 @@
 import { shouldEmergencyStop } from "./emergency";
 import {
   createEmptySession,
-  QUESTION_ORDER,
+  questionPath,
   type QuestionId,
   type WaitingRoomSession,
 } from "./session";
@@ -13,6 +13,8 @@ export type WaitingRoomAction =
   | { type: "SET_ANSWER"; questionId: QuestionId; text: string }
   | { type: "NEXT_QUESTION" }
   | { type: "PREV_QUESTION" }
+  | { type: "SET_DID_SEARCH"; didSearch: boolean }
+  | { type: "BACK_FROM_SEARCH_GATE" }
   | { type: "DONE" };
 
 export function waitingRoomReducer(
@@ -40,7 +42,8 @@ export function waitingRoomReducer(
         ...session,
         status: "asking",
         emergencyStop: false,
-        currentQuestion: "searched",
+        currentQuestion: "feel",
+        didSearch: null,
       };
     }
 
@@ -58,18 +61,27 @@ export function waitingRoomReducer(
         return session;
       }
 
-      const index = QUESTION_ORDER.indexOf(session.currentQuestion);
-      if (index < 0) {
+      if (session.currentQuestion === "feel") {
+        return {
+          ...session,
+          status: "search_gate",
+          currentQuestion: null,
+        };
+      }
+
+      if (session.didSearch === null) {
         return session;
       }
 
-      if (index >= QUESTION_ORDER.length - 1) {
+      const path = questionPath(session.didSearch);
+      const index = path.indexOf(session.currentQuestion);
+      if (index < 0 || index >= path.length - 1) {
         return { ...session, status: "note", currentQuestion: null };
       }
 
       return {
         ...session,
-        currentQuestion: QUESTION_ORDER[index + 1],
+        currentQuestion: path[index + 1],
       };
     }
 
@@ -78,8 +90,7 @@ export function waitingRoomReducer(
         return session;
       }
 
-      const index = QUESTION_ORDER.indexOf(session.currentQuestion);
-      if (index <= 0) {
+      if (session.currentQuestion === "feel") {
         return {
           ...session,
           status: "emergency_check",
@@ -87,11 +98,56 @@ export function waitingRoomReducer(
         };
       }
 
+      if (session.didSearch === null) {
+        return session;
+      }
+
+      const path = questionPath(session.didSearch);
+      const index = path.indexOf(session.currentQuestion);
+      if (index <= 1) {
+        return {
+          ...session,
+          status: "search_gate",
+          currentQuestion: null,
+        };
+      }
+
       return {
         ...session,
-        currentQuestion: QUESTION_ORDER[index - 1],
+        currentQuestion: path[index - 1],
       };
     }
+
+    case "SET_DID_SEARCH": {
+      if (action.didSearch) {
+        return {
+          ...session,
+          status: "asking",
+          didSearch: true,
+          currentQuestion: "searched",
+        };
+      }
+
+      return {
+        ...session,
+        status: "asking",
+        didSearch: false,
+        currentQuestion: "fear",
+        answers: {
+          ...session.answers,
+          searched: "",
+          itSaid: "",
+        },
+      };
+    }
+
+    case "BACK_FROM_SEARCH_GATE":
+      return {
+        ...session,
+        status: "asking",
+        currentQuestion: "feel",
+        didSearch: null,
+      };
 
     case "DONE":
       return createEmptySession();

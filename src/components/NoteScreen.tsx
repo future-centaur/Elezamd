@@ -6,14 +6,15 @@ import type { WaitingRoomAnswers } from "@/lib/session";
 
 type NoteScreenProps = {
   answers: WaitingRoomAnswers;
+  didSearch: boolean;
   onDone: () => void;
 };
 
-export function NoteScreen({ answers, onDone }: NoteScreenProps) {
+export function NoteScreen({ answers, didSearch, onDone }: NoteScreenProps) {
   const [copied, setCopied] = useState(false);
 
   async function copyNote() {
-    await copyText(formatNote(answers));
+    await copyText(formatNote(answers, didSearch));
     setCopied(true);
   }
 
@@ -34,14 +35,22 @@ export function NoteScreen({ answers, onDone }: NoteScreenProps) {
       </p>
 
       <section className="mt-5 space-y-4">
-        <NoteBlock label={NOTE.searchedLabel} text={answers.searched} />
-        <NoteBlock label={NOTE.itSaidLabel} text={answers.itSaid} />
+        <NoteBlock label={NOTE.feelLabel} text={answers.feel} />
         <NoteBlock
           label={NOTE.fearLabel}
           text={answers.fear}
           quoted
         />
-        <NoteBlock label={NOTE.feelLabel} text={answers.feel} />
+        {didSearch ? (
+          <>
+            <NoteBlock label={NOTE.searchedLabel} text={answers.searched} />
+            <NoteBlock label={NOTE.itSaidLabel} text={answers.itSaid} />
+          </>
+        ) : (
+          <p className="rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm leading-6 text-stone-900">
+            {NOTE.didNotSearch}
+          </p>
+        )}
       </section>
 
       <p className="mt-5 text-xs leading-5 text-stone-500">{NOTE.clinicHint}</p>
@@ -80,9 +89,11 @@ function NoteBlock({
       <h2 className="text-xs font-medium uppercase tracking-[0.12em] text-stone-500">
         {label}
       </h2>
-      <p className="mt-1 whitespace-pre-wrap text-sm leading-6 text-stone-900">
-        {quoted ? `“${text}”` : text}
-      </p>
+      {text ? (
+        <p className="mt-1 whitespace-pre-wrap text-sm leading-6 text-stone-900">
+          {quoted ? `“${text}”` : text}
+        </p>
+      ) : null}
     </div>
   );
 }

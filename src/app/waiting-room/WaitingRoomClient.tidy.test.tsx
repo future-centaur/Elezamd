@@ -5,6 +5,7 @@ import {
   DISCLOSURE,
   EMERGENCY_CHECK,
   QUESTION_UI,
+  SEARCH_GATE,
 } from "@/lib/copy";
 
 vi.mock("@/lib/features", () => ({
@@ -44,6 +45,9 @@ describe("WaitingRoomClient tidy", () => {
         expect.objectContaining({ method: "POST" }),
       );
     });
+    expect(screen.getByText(SEARCH_GATE.title)).toBeDefined();
+
+    await user.click(screen.getByRole("button", { name: SEARCH_GATE.yes }));
     expect(screen.getByText("2 of 4")).toBeDefined();
   });
 });

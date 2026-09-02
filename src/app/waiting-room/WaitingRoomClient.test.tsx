@@ -9,6 +9,7 @@ import {
   NOTE,
   QUESTION_UI,
   QUESTIONS,
+  SEARCH_GATE,
 } from "@/lib/copy";
 import { formatNote } from "@/lib/format-note";
 
@@ -42,6 +43,14 @@ async function answerCurrent(user: ReturnType<typeof userEvent.setup>, text: str
   await user.click(screen.getByRole("button", { name: QUESTION_UI.continue }));
 }
 
+async function completeYesPath(user: ReturnType<typeof userEvent.setup>) {
+  await answerCurrent(user, DEMO.feel);
+  await user.click(screen.getByRole("button", { name: SEARCH_GATE.yes }));
+  await answerCurrent(user, DEMO.searched);
+  await answerCurrent(user, DEMO.itSaid);
+  await answerCurrent(user, DEMO.fear);
+}
+
 describe("WaitingRoomClient", () => {
   afterEach(() => {
     cleanup();
@@ -51,31 +60,53 @@ describe("WaitingRoomClient", () => {
   it("shows AI disclosure before any question", () => {
     render(<WaitingRoomClient />);
     expect(screen.getByText(DISCLOSURE.aiInvolved)).toBeDefined();
+    expect(screen.queryByText(QUESTIONS.feel.prompt)).toBeNull();
     expect(screen.queryByText(QUESTIONS.searched.prompt)).toBeNull();
   });
 
-  it("completes Q1–Q4 and shows all four answers unmodified", async () => {
+  it("asks what they feel before asking if they searched", async () => {
     render(<WaitingRoomClient />);
     const user = await startQuestions();
-    await answerCurrent(user, DEMO.searched);
-    await answerCurrent(user, DEMO.itSaid);
-    await answerCurrent(user, DEMO.fear);
+
+    expect(screen.getByText(QUESTIONS.feel.prompt)).toBeDefined();
+    expect(screen.queryByText(SEARCH_GATE.title)).toBeNull();
+    expect(screen.queryByText(QUESTIONS.searched.prompt)).toBeNull();
+
     await answerCurrent(user, DEMO.feel);
+    expect(screen.getByText(SEARCH_GATE.title)).toBeDefined();
+    expect(screen.queryByText(QUESTIONS.searched.prompt)).toBeNull();
+  });
+
+  it("completes the yes path and shows body first on the note", async () => {
+    render(<WaitingRoomClient />);
+    const user = await startQuestions();
+    await completeYesPath(user);
 
     expect(screen.getByText(NOTE.badge)).toBeDefined();
+    expect(screen.getByText(DEMO.feel)).toBeDefined();
+    expect(screen.getByText(`“${DEMO.fear}”`)).toBeDefined();
     expect(screen.getByText(DEMO.searched)).toBeDefined();
     expect(screen.getByText(DEMO.itSaid)).toBeDefined();
-    expect(screen.getByText(`“${DEMO.fear}”`)).toBeDefined();
+  });
+
+  it("skips search questions when they did not look it up", async () => {
+    render(<WaitingRoomClient />);
+    const user = await startQuestions();
+    await answerCurrent(user, DEMO.feel);
+    await user.click(screen.getByRole("button", { name: SEARCH_GATE.no }));
+    await answerCurrent(user, DEMO.fear);
+
+    expect(screen.getByText(NOTE.badge)).toBeDefined();
     expect(screen.getByText(DEMO.feel)).toBeDefined();
+    expect(screen.getByText(`“${DEMO.fear}”`)).toBeDefined();
+    expect(screen.getByText(NOTE.didNotSearch)).toBeDefined();
+    expect(screen.queryByText(DEMO.searched)).toBeNull();
   });
 
   it("does not restore answers after remount, like a refresh", async () => {
     const { unmount } = render(<WaitingRoomClient />);
     const user = await startQuestions();
-    await answerCurrent(user, DEMO.searched);
-    await answerCurrent(user, DEMO.itSaid);
-    await answerCurrent(user, DEMO.fear);
-    await answerCurrent(user, DEMO.feel);
+    await completeYesPath(user);
     expect(screen.getByText(DEMO.searched)).toBeDefined();
 
     unmount();
@@ -89,10 +120,7 @@ describe("WaitingRoomClient", () => {
   it("returns to disclosure with empty fields after I’m done", async () => {
     render(<WaitingRoomClient />);
     const user = await startQuestions();
-    await answerCurrent(user, DEMO.searched);
-    await answerCurrent(user, DEMO.itSaid);
-    await answerCurrent(user, DEMO.fear);
-    await answerCurrent(user, DEMO.feel);
+    await completeYesPath(user);
 
     await user.click(screen.getByRole("button", { name: NOTE.imDone }));
 
@@ -109,6 +137,7 @@ describe("WaitingRoomClient", () => {
     await user.click(screen.getByRole("button", { name: EMERGENCY_CHECK.continue }));
 
     expect(screen.getByText(EMERGENCY_STOP.body)).toBeDefined();
+    expect(screen.queryByText(QUESTIONS.feel.prompt)).toBeNull();
     expect(screen.queryByText(QUESTIONS.searched.prompt)).toBeNull();
     expect(screen.queryByText(NOTE.badge)).toBeNull();
     expect(screen.queryByText(/you may have/i)).toBeNull();
@@ -116,16 +145,13 @@ describe("WaitingRoomClient", () => {
     expect(screen.queryByText(/pneumonia/i)).toBeNull();
   });
 
-  it("copies the four sections to the clipboard", async () => {
+  it("copies the note to the clipboard", async () => {
     render(<WaitingRoomClient />);
     const user = await startQuestions();
-    await answerCurrent(user, DEMO.searched);
-    await answerCurrent(user, DEMO.itSaid);
-    await answerCurrent(user, DEMO.fear);
-    await answerCurrent(user, DEMO.feel);
+    await completeYesPath(user);
 
     await user.click(screen.getByRole("button", { name: NOTE.copyNote }));
 
-    expect(copyText).toHaveBeenCalledWith(formatNote(DEMO));
+    expect(copyText).toHaveBeenCalledWith(formatNote(DEMO, true));
   });
 });

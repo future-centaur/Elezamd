@@ -37,6 +37,9 @@ export function EmergencyCheckScreen({
         <legend className="text-xl font-semibold tracking-tight text-stone-900">
           {EMERGENCY_CHECK.title}
         </legend>
+        <p className="mt-2 text-sm leading-6 text-stone-700">
+          {EMERGENCY_CHECK.hint}
+        </p>
         <ul className="mt-5 space-y-2">
           {WARNING_SIGNS.map((sign) => (
             <li key={sign.id}>

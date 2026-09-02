@@ -1,7 +1,21 @@
 import { NOTE, PRODUCT_NAME } from "./copy";
 import type { WaitingRoomAnswers } from "./session";
 
-export function formatNote(answers: WaitingRoomAnswers): string {
+export function formatNote(
+  answers: WaitingRoomAnswers,
+  didSearch: boolean,
+): string {
+  const searchSection = didSearch
+    ? [
+        NOTE.searchedLabel,
+        answers.searched,
+        "",
+        NOTE.itSaidLabel,
+        answers.itSaid,
+        "",
+      ]
+    : [NOTE.didNotSearch, ""];
+
   return [
     PRODUCT_NAME,
     NOTE.forTheNurse,
@@ -10,18 +24,13 @@ export function formatNote(answers: WaitingRoomAnswers): string {
     NOTE.aiHelped,
     NOTE.keepNothing,
     "",
-    NOTE.searchedLabel,
-    answers.searched,
-    "",
-    NOTE.itSaidLabel,
-    answers.itSaid,
+    NOTE.feelLabel,
+    answers.feel,
     "",
     NOTE.fearLabel,
     answers.fear,
     "",
-    NOTE.feelLabel,
-    answers.feel,
-    "",
+    ...searchSection,
     NOTE.clinicHint,
   ].join("\n");
 }
