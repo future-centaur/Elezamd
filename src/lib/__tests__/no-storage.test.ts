@@ -60,9 +60,28 @@ describe("privacy and product boundaries", () => {
   });
 
   it("does not create assessment or share API routes", () => {
+    // NOTE: the `feature/share-link` branch intentionally adds a
+    // practitioner share link (see SPEC.md §3 "Non-Goals" and §4 P-01/P-03/
+    // H-03 for why this is normally forbidden on `main`). This allowlist is
+    // the single, explicit, scoped exception — it must not grow silently.
+    const ALLOWED_SHARE_PATHS = [
+      "/api/waiting-room/share/route.ts",
+      "/share/[code]/page.tsx",
+      "/share/[code]/CopyNoteButton.tsx",
+    ];
+
     for (const { file } of contents) {
       const normalized = file.replace(/\\/g, "/");
+      const isAllowedShareRoute = ALLOWED_SHARE_PATHS.some((allowed) =>
+        normalized.endsWith(allowed),
+      );
+
       expect(normalized).not.toMatch(/\/api\/ai\//);
+
+      if (isAllowedShareRoute) {
+        continue;
+      }
+
       expect(normalized).not.toMatch(/\/api\/share/);
       expect(normalized).not.toMatch(/\/share\//);
       if (normalized.includes("/api/")) {

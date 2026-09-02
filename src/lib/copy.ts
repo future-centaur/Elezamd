@@ -106,3 +106,29 @@ export const CHROME = {
   wordmark: PRODUCT_NAME,
   subtitle: SUBTITLE,
 };
+
+export const SHARE = {
+  buttonLabel: "Share with practitioner",
+  sending: "Creating link…",
+  failed: "Could not create a link. Try again.",
+  createdTitle: "Share this with the practitioner",
+  codeLabel: "Code",
+  linkLabel: "Link",
+  copyLink: "Copy link",
+  copied: "Copied",
+  emailButton: "Email this link",
+  emailSubject: "ElezaMD note",
+  emailBody: (url: string) =>
+    `Here is a link to the patient's ElezaMD note: ${url}`,
+  expiresHint: "This link expires in 24 hours.",
+  close: "Close",
+};
+
+export const SHARE_VIEWER = {
+  title: PRODUCT_NAME,
+  eyebrow: "Shared note",
+  intro: "A patient shared this note with you from ElezaMD.",
+  notFoundTitle: "This note is no longer available",
+  notFoundBody:
+    "The link may have expired, or it was never created. Ask the patient to share it again.",
+};

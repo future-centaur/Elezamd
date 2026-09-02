@@ -4,9 +4,10 @@ import { useState } from "react";
 import { Button } from "@heroui/react/button";
 import { Card } from "@heroui/react/card";
 import { Chip } from "@heroui/react/chip";
-import { NOTE } from "@/lib/copy";
+import { NOTE, SHARE } from "@/lib/copy";
 import { copyText } from "@/lib/clipboard";
 import { formatNote } from "@/lib/format-note";
+import { FEATURES } from "@/lib/features";
 import type { WaitingRoomAnswers } from "@/lib/session";
 
 type NoteScreenProps = {
@@ -15,12 +16,54 @@ type NoteScreenProps = {
   onDone: () => void;
 };
 
+type ShareState =
+  | { status: "idle" }
+  | { status: "sending" }
+  | { status: "ready"; url: string; code: string }
+  | { status: "error" };
+
 export function NoteScreen({ answers, didSearch, onDone }: NoteScreenProps) {
   const [copied, setCopied] = useState(false);
+  const [share, setShare] = useState<ShareState>({ status: "idle" });
+  const [linkCopied, setLinkCopied] = useState(false);
 
   async function copyNote() {
     await copyText(formatNote(answers, didSearch));
     setCopied(true);
+  }
+
+  async function createShareLink() {
+    setShare({ status: "sending" });
+    try {
+      const response = await fetch("/api/waiting-room/share", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ answers, didSearch }),
+      });
+      if (!response.ok) {
+        setShare({ status: "error" });
+        return;
+      }
+      const data: unknown = await response.json();
+      if (
+        data &&
+        typeof data === "object" &&
+        "code" in data &&
+        typeof data.code === "string"
+      ) {
+        const url = `${window.location.origin}/share/${data.code}`;
+        setShare({ status: "ready", url, code: data.code });
+      } else {
+        setShare({ status: "error" });
+      }
+    } catch {
+      setShare({ status: "error" });
+    }
+  }
+
+  async function copyLink(url: string) {
+    await copyText(url);
+    setLinkCopied(true);
   }
 
   return (
@@ -59,6 +102,59 @@ export function NoteScreen({ answers, didSearch, onDone }: NoteScreenProps) {
       </section>
 
       <p className="mt-5 text-xs leading-5 text-muted">{NOTE.clinicHint}</p>
+
+      {FEATURES.SHARE_LINK ? (
+        <div className="mt-5">
+          {share.status === "ready" ? (
+            <Card>
+              <Card.Content>
+                <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted">
+                  {SHARE.createdTitle}
+                </p>
+                <p className="mt-2 font-mono text-sm text-foreground">
+                  {share.url}
+                </p>
+                <p className="mt-2 text-xs text-muted">{SHARE.expiresHint}</p>
+                <div className="mt-3 flex gap-2">
+                  <Button
+                    fullWidth
+                    size="sm"
+                    variant="secondary"
+                    onPress={() => {
+                      void copyLink(share.url);
+                    }}
+                  >
+                    {linkCopied ? SHARE.copied : SHARE.copyLink}
+                  </Button>
+                  <a
+                    className="button button--secondary button--sm button--full-width"
+                    href={`mailto:?subject=${encodeURIComponent(
+                      SHARE.emailSubject,
+                    )}&body=${encodeURIComponent(SHARE.emailBody(share.url))}`}
+                  >
+                    {SHARE.emailButton}
+                  </a>
+                </div>
+              </Card.Content>
+            </Card>
+          ) : (
+            <Button
+              fullWidth
+              isDisabled={share.status === "sending"}
+              size="lg"
+              variant="secondary"
+              onPress={() => {
+                void createShareLink();
+              }}
+            >
+              {share.status === "sending" ? SHARE.sending : SHARE.buttonLabel}
+            </Button>
+          )}
+          {share.status === "error" ? (
+            <p className="mt-2 text-xs text-danger">{SHARE.failed}</p>
+          ) : null}
+        </div>
+      ) : null}
 
       <div className="mt-auto flex flex-col gap-3 pt-6">
         <Button
